@@ -8,7 +8,7 @@ applications.
 == Features
 
 * Can avoid expensive exceptions on common EAGAIN/EINPROGRESS errors,
-  returning Kgio::WaitReadable or Kgio::WaitWritable instead.
+  returning :wait_readable or :wait_writable instead.
   These exceptions got more expensive to hit under Ruby 1.9.2
   (but should be fixed in Ruby 1.9.3 to 1.9.1 performance levels)
 

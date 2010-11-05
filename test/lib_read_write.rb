@@ -97,9 +97,9 @@ module LibReadWriteTest
         case rv
         when String
           wr = rv
-        when Kgio::WaitReadable
+        when :wait_readable
           assert false, "should never get here line=#{__LINE__}"
-        when Kgio::WaitWritable
+        when :wait_writable
           IO.select(nil, [ @wr ])
         else
           wr = false
@@ -122,7 +122,7 @@ module LibReadWriteTest
   end
 
   def test_tryread_empty
-    assert_equal Kgio::WaitReadable, @rd.kgio_tryread(1)
+    assert_equal :wait_readable, @rd.kgio_tryread(1)
   end
 
   def test_read_too_much
@@ -159,10 +159,10 @@ module LibReadWriteTest
 
   def test_trywrite_return_wait_writable
     tmp = []
-    tmp << @wr.kgio_trywrite("HI") until tmp[-1] == Kgio::WaitWritable
-    assert Kgio::WaitWritable === tmp[-1]
-    assert(!(Kgio::WaitReadable === tmp[-1]))
-    assert_equal Kgio::WaitWritable, tmp.pop
+    tmp << @wr.kgio_trywrite("HI") until tmp[-1] == :wait_writable
+    assert :wait_writable === tmp[-1]
+    assert(!(:wait_readable === tmp[-1]))
+    assert_equal :wait_writable, tmp.pop
     assert tmp.size > 0
     penultimate = tmp.pop
     assert(penultimate == "I" || penultimate == nil)
@@ -173,7 +173,7 @@ module LibReadWriteTest
   def test_tryread_extra_buf_eagain_clears_buffer
     tmp = "hello world"
     rv = @rd.kgio_tryread(2, tmp)
-    assert_equal Kgio::WaitReadable, rv
+    assert_equal :wait_readable, rv
     assert_equal "", tmp
   end
 
@@ -281,7 +281,7 @@ module LibReadWriteTest
       raise "Hello"
     end
     assert_nothing_raised { Kgio.wait_readable = :moo }
-    assert_equal Kgio::WaitReadable, @rd.kgio_tryread(5)
+    assert_equal :wait_readable, @rd.kgio_tryread(5)
   end
 
   def test_trywrite_wait_readable_method
@@ -292,7 +292,7 @@ module LibReadWriteTest
     tmp = []
     buf = "." * 1024
     10000.times { tmp << @wr.kgio_trywrite(buf) }
-    assert_equal Kgio::WaitWritable, tmp.pop
+    assert_equal :wait_writable, tmp.pop
   end
 
   def test_wait_writable_method

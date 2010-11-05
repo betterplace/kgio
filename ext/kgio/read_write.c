@@ -1,5 +1,5 @@
 #include "kgio.h"
-static VALUE mKgio_WaitReadable, mKgio_WaitWritable;
+static VALUE sym_wait_readable, sym_wait_writable;
 static VALUE eErrno_EPIPE, eErrno_ECONNRESET;
 
 /*
@@ -74,7 +74,7 @@ static int read_check(struct io_args *a, long n, const char *msg, int io_wait)
 				a->ptr = RSTRING_PTR(a->buf);
 				return -1;
 			} else {
-				a->buf = mKgio_WaitReadable;
+				a->buf = sym_wait_readable;
 				return 0;
 			}
 		}
@@ -150,7 +150,7 @@ static VALUE kgio_read_bang(int argc, VALUE *argv, VALUE io)
  *
  * Returns nil on EOF.
  *
- * Returns Kgio::WaitReadable if EAGAIN is encountered.
+ * Returns :wait_readable if EAGAIN is encountered.
  */
 static VALUE kgio_tryread(int argc, VALUE *argv, VALUE io)
 {
@@ -243,7 +243,7 @@ done:
 			} else if (written > 0) {
 				a->buf = rb_str_new(a->ptr, a->len);
 			} else {
-				a->buf = mKgio_WaitWritable;
+				a->buf = sym_wait_writable;
 			}
 			return 0;
 		}
@@ -290,14 +290,14 @@ static VALUE kgio_write(VALUE io, VALUE str)
 /*
  * call-seq:
  *
- *	io.kgio_trywrite(str)	-> nil or Kgio::WaitWritable
+ *	io.kgio_trywrite(str)	-> nil or :wait_writable
  *
  * Returns nil if the write was completed in full.
  *
  * Returns a String containing the unwritten portion if EAGAIN
  * was encountered, but some portion was successfully written.
  *
- * Returns Kgio::WaitWritable if EAGAIN is encountered and nothing
+ * Returns :wait_writable if EAGAIN is encountered and nothing
  * was written.
  */
 static VALUE kgio_trywrite(VALUE io, VALUE str)
@@ -353,8 +353,8 @@ void init_kgio_read_write(void)
 	VALUE mPipeMethods, mSocketMethods;
 	VALUE mKgio = rb_define_module("Kgio");
 
-	mKgio_WaitReadable = rb_const_get(mKgio, rb_intern("WaitReadable"));
-	mKgio_WaitWritable = rb_const_get(mKgio, rb_intern("WaitWritable"));
+	sym_wait_readable = ID2SYM(rb_intern("wait_readable"));
+	sym_wait_writable = ID2SYM(rb_intern("wait_writable"));
 
 	/*
 	 * Document-module: Kgio::PipeMethods

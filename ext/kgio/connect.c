@@ -100,7 +100,7 @@ static VALUE kgio_tcp_connect(VALUE klass, VALUE ip, VALUE port)
  * Creates a new Kgio::TCPSocket object and initiates a
  * non-blocking connection.  The caller should select/poll
  * on the socket for writability before attempting to write
- * or optimistically attempt a write and handle Kgio::WaitWritable
+ * or optimistically attempt a write and handle :wait_writable
  * or Errno::EAGAIN.
  *
  * Unlike the TCPSocket.new in Ruby, this does NOT perform DNS
@@ -153,7 +153,7 @@ static VALUE kgio_unix_connect(VALUE klass, VALUE path)
  * Creates a new Kgio::UNIXSocket object and initiates a
  * non-blocking connection.  The caller should select/poll
  * on the socket for writability before attempting to write
- * or optimistically attempt a write and handle Kgio::WaitWritable
+ * or optimistically attempt a write and handle :wait_writable
  * or Errno::EAGAIN.
  */
 static VALUE kgio_unix_start(VALUE klass, VALUE path)
@@ -215,7 +215,7 @@ static VALUE kgio_connect(VALUE klass, VALUE addr)
  * Creates a generic Kgio::Socket object and initiates a
  * non-blocking connection.  The caller should select/poll
  * on the socket for writability before attempting to write
- * or optimistically attempt a write and handle Kgio::WaitWritable
+ * or optimistically attempt a write and handle :wait_writable
  * or Errno::EAGAIN.
  */
 static VALUE kgio_start(VALUE klass, VALUE addr)
