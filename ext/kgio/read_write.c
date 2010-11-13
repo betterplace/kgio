@@ -26,7 +26,7 @@ static void raise_empty_bt(VALUE err, const char *msg)
 
 static void my_eof_error(void)
 {
-	raise_empty_bt(rb_eEOFError, "");
+	raise_empty_bt(rb_eEOFError, "end of file reached");
 }
 
 static void wr_sys_fail(const char *msg)
