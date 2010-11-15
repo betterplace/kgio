@@ -61,8 +61,7 @@ from git.
 
 All feedback (bug reports, user/development dicussion, patches, pull
 requests) go to the mailing list/newsgroup.  See the ISSUES document for
-information on the
-{Unicorn mailing list}[mailto:mongrel-unicorn@rubyforge.org].
+information on the {kgio mailing list}[mailto:kgio@librelist.com]
 
 For the latest on kgio releases, you may check our NEWS page (and
 subscribe to our Atom feed).

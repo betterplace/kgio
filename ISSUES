@@ -1,18 +1,16 @@
 = Issues
 
-The Unicorn {mailing list}[mailto:mongrel-unicorn@rubyforge.org] is the best
+The kgio {mailing list}[mailto:kgio@librelist.com] is the best
 place to report bugs, submit patches and/or obtain support after you
 have searched the mailing list archives and
 {documentation}[http://unicorn.bogomips.org/kgio].
 
-* No subscription is needed to post to the mailing list,
-  let us know that we need to Cc: replies to you if you're unsubscribed.
 * Do not {top post}[http://catb.org/jargon/html/T/top-post.html] in replies
 * Quote only the relevant portions of the message you're replying to
-* Do not send HTML mail
+* Do not send any HTML mail at all
 
 If your issue is of a sensitive nature or you're just shy in public,
-then feel free to email us privately at mailto:unicorn@bogomips.org
+then feel free to email us privately at mailto:kgio@bogomips.org
 instead and your issue will be handled discreetly.
 
 If you don't get a response within a few days, we may have forgotten
@@ -26,11 +24,11 @@ guidelines for patch submission.
 
 == Mailing List Info
 
-* subscribe: http://rubyforge.org/mailman/listinfo/mongrel-unicorn
-* post: mailto:mongrel-unicorn@rubyforge.org
-* private: mailto:unicorn@bogomips.org
+* subscribe: send a message to the mailing list
+* post: mailto:kgio@librelist.com
+* private: mailto:kgio@bogomips.org
 
-== Mailing List Archives
+== Mailing List Archives (coming soon)
 
-* nntp://news.gmane.org/gmane.comp.lang.ruby.unicorn.general
-* http://rubyforge.org/pipermail/mongrel-unicorn
+* http://unicorn.bogomips.org/kgio/archives/
+* nntp://news.gmane.org/gmane.comp.lang.ruby.kgio.general

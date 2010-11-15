@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.authors = ["kgio hackers"]
   s.date = Time.now.utc.strftime('%Y-%m-%d')
   s.description = description
-  s.email = %q{mongrel-unicorn@rubyforge.org}
+  s.email = %q{kgio@bogomips.org}
 
   s.extra_rdoc_files = File.readlines('.document').map! do |x|
     x.chomp!
