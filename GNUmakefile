@@ -139,7 +139,7 @@ release: verify package $(release_notes) $(release_changes)
 	# make tgz release on RubyForge
 	rubyforge add_release -f -n $(release_notes) -a $(release_changes) \
 	  $(rfproject) $(rfpackage) $(VERSION) $(pkgtgz)
-	# push gem to Gemcutter
+	# push gem to RubyGems.org
 	gem push $(pkggem)
 	# in case of gem downloads from RubyForge releases page
 	-rubyforge add_file \
