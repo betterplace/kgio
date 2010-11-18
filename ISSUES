@@ -3,7 +3,7 @@
 The kgio {mailing list}[mailto:kgio@librelist.com] is the best
 place to report bugs, submit patches and/or obtain support after you
 have searched the mailing list archives and
-{documentation}[http://unicorn.bogomips.org/kgio].
+{documentation}[http://bogomips.org/kgio].
 
 * Do not {top post}[http://catb.org/jargon/html/T/top-post.html] in replies
 * Quote only the relevant portions of the message you're replying to
@@ -30,5 +30,5 @@ guidelines for patch submission.
 
 == Mailing List Archives (coming soon)
 
-* http://unicorn.bogomips.org/kgio/archives/
+* http://bogomips.org/kgio/archives/
 * nntp://news.gmane.org/gmane.comp.lang.ruby.kgio.general

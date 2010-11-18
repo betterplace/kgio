@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.name = %q{kgio}
   s.version = ENV["VERSION"]
 
-  s.homepage = 'http://unicorn.bogomips.org/kgio/'
+  s.homepage = 'http://bogomips.org/kgio/'
   s.authors = ["kgio hackers"]
   s.date = Time.now.utc.strftime('%Y-%m-%d')
   s.description = description

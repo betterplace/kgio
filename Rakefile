@@ -25,7 +25,7 @@ end
 
 cgit_url = "http://git.bogomips.org/cgit/kgio.git"
 git_url = ENV['GIT_URL'] || 'git://git.bogomips.org/kgio.git'
-web_url = "http://unicorn.bogomips.org/kgio"
+web_url = "http://bogomips.org/kgio"
 
 desc 'prints news as an Atom feed'
 task :news_atom do

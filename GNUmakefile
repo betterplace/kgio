@@ -64,7 +64,7 @@ ChangeLog: GIT-VERSION-FILE
 	git log $(log_range) | sed -e 's/^/    /' >> $@+
 	mv $@+ $@
 
-news_atom := http://unicorn.bogomips.org/kgio/NEWS.atom.xml
+news_atom := http://bogomips.org/kgio/NEWS.atom.xml
 cgit_atom := http://git.bogomips.org/cgit/kgio.git/atom/?h=master
 atom = <link rel="alternate" title="Atom feed" href="$(1)" \
              type="application/atom+xml"/>
@@ -177,7 +177,7 @@ publish_doc:
 		TZ=UTC xargs touch -d '1970-01-01 00:00:00' doc/rdoc.css
 	$(MAKE) doc_gz
 	chmod 644 $$(find doc -type f)
-	$(RSYNC) -av doc/ unicorn.bogomips.org:/srv/unicorn/kgio/
+	$(RSYNC) -av doc/ bogomips.org:/srv/bogomips/kgio/
 	git ls-files | xargs touch
 
 # Create gzip variants of the same timestamp as the original so nginx
