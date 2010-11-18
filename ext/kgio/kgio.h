@@ -34,7 +34,7 @@ void init_kgio_read_write(void);
 void init_kgio_accept(void);
 void init_kgio_connect(void);
 
-void kgio_wait_writable(VALUE io, int fd);
-void kgio_wait_readable(VALUE io, int fd);
+void kgio_call_wait_writable(VALUE io, int fd);
+void kgio_call_wait_readable(VALUE io, int fd);
 
 #endif /* KGIO_H */

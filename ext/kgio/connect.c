@@ -46,7 +46,7 @@ my_connect(VALUE klass, int io_wait, int domain, void *addr, socklen_t addrlen)
 
 			if (io_wait) {
 				errno = EAGAIN;
-				kgio_wait_writable(io, fd);
+				kgio_call_wait_writable(io, fd);
 			}
 			return io;
 		}

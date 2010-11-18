@@ -67,7 +67,7 @@ static int read_check(struct io_args *a, long n, const char *msg, int io_wait)
 		rb_str_set_len(a->buf, 0);
 		if (errno == EAGAIN) {
 			if (io_wait) {
-				kgio_wait_readable(a->io, a->fd);
+				kgio_call_wait_readable(a->io, a->fd);
 
 				/* buf may be modified in other thread/fiber */
 				rb_str_resize(a->buf, a->len);
@@ -232,7 +232,7 @@ done:
 			long written = RSTRING_LEN(a->buf) - a->len;
 
 			if (io_wait) {
-				kgio_wait_writable(a->io, a->fd);
+				kgio_call_wait_writable(a->io, a->fd);
 
 				/* buf may be modified in other thread/fiber */
 				a->len = RSTRING_LEN(a->buf) - written;
@@ -352,6 +352,7 @@ void init_kgio_read_write(void)
 {
 	VALUE mPipeMethods, mSocketMethods;
 	VALUE mKgio = rb_define_module("Kgio");
+	VALUE mWaiters = rb_const_get(mKgio, rb_intern("DefaultWaiters"));
 
 	sym_wait_readable = ID2SYM(rb_intern("wait_readable"));
 	sym_wait_writable = ID2SYM(rb_intern("wait_writable"));
@@ -393,4 +394,6 @@ void init_kgio_read_write(void)
 
 	eErrno_EPIPE = rb_const_get(rb_mErrno, rb_intern("EPIPE"));
 	eErrno_ECONNRESET = rb_const_get(rb_mErrno, rb_intern("ECONNRESET"));
+	rb_include_module(mPipeMethods, mWaiters);
+	rb_include_module(mSocketMethods, mWaiters);
 }

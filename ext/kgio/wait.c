@@ -2,8 +2,35 @@
 
 static ID io_wait_rd, io_wait_wr;
 
-void kgio_wait_readable(VALUE io, int fd)
+/*
+ * avoiding rb_thread_select() or similar since rb_io_wait_*able can be
+ * made to use poll() later on.  It's highly unlikely Ruby will move to
+ * use an edge-triggered event notification, so assign EAGAIN is safe...
+ */
+static VALUE force_wait_readable(VALUE self)
 {
+	errno = EAGAIN;
+	if (!rb_io_wait_readable(my_fileno(self)))
+		rb_sys_fail("wait readable");
+
+	return self;
+}
+
+static VALUE force_wait_writable(VALUE self)
+{
+	errno = EAGAIN;
+	if (!rb_io_wait_writable(my_fileno(self)))
+		rb_sys_fail("wait writable");
+
+	return self;
+}
+
+void kgio_call_wait_readable(VALUE io, int fd)
+{
+	/*
+	 * we _NEVER_ set errno = EAGAIN here by default so we can work
+	 * (or fail hard) with edge-triggered epoll()
+	 */
 	if (io_wait_rd) {
 		(void)rb_funcall(io, io_wait_rd, 0, 0);
 	} else {
@@ -12,8 +39,12 @@ void kgio_wait_readable(VALUE io, int fd)
 	}
 }
 
-void kgio_wait_writable(VALUE io, int fd)
+void kgio_call_wait_writable(VALUE io, int fd)
 {
+	/*
+	 * we _NEVER_ set errno = EAGAIN here by default so we can work
+	 * (or fail hard) with edge-triggered epoll()
+	 */
 	if (io_wait_wr) {
 		(void)rb_funcall(io, io_wait_wr, 0, 0);
 	} else {
@@ -109,6 +140,12 @@ static VALUE wait_rd(VALUE mod)
 void init_kgio_wait(void)
 {
 	VALUE mKgio = rb_define_module("Kgio");
+	VALUE mWaiters = rb_define_module_under(mKgio, "DefaultWaiters");
+
+	rb_define_method(mWaiters, "kgio_wait_readable",
+	                 force_wait_readable, 0);
+	rb_define_method(mWaiters, "kgio_wait_writable",
+	                 force_wait_writable, 0);
 
 	rb_define_singleton_method(mKgio, "wait_readable=", set_wait_rd, 1);
 	rb_define_singleton_method(mKgio, "wait_writable=", set_wait_wr, 1);
