@@ -6,7 +6,7 @@ require 'tempfile'
 
 class SubSocket < Kgio::Socket
   attr_accessor :foo
-  def wait_writable
+  def kgio_wait_writable
     @foo = "waited"
   end
 end
@@ -57,7 +57,6 @@ class TestKgioUnixConnect < Test::Unit::TestCase
   end
 
   def test_socket_start
-    Kgio::wait_writable = :wait_writable
     sock = SubSocket.start(@addr)
     assert_nil sock.foo
     ready = IO.select(nil, [ sock ])
@@ -66,7 +65,6 @@ class TestKgioUnixConnect < Test::Unit::TestCase
   end
 
   def test_wait_writable_set
-    Kgio::wait_writable = :wait_writable
     sock = SubSocket.new(@addr)
     assert_kind_of Kgio::Socket, sock
     assert_instance_of SubSocket, sock

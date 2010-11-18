@@ -15,9 +15,9 @@ applications.
 * Returns the unwritten portion of the string on partial writes,
   making it ideal for buffering unwritten data.
 
-* May be assigned Kgio.wait_writable= and Kgio.wait_readable=
-  methods to allow socket/pipe objects to make custom callbacks
-  (such as adding the file descriptor to a poll set and yielding
+* May call any method defined to be "kgio_wait_writable" or
+  "kgio_wait_readable" methods to allow socket/pipe objects to make custom
+  callbacks (such as adding the file descriptor to a poll set and yielding
   the current Fiber).
 
 * Uses

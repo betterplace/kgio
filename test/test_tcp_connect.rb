@@ -5,7 +5,7 @@ require 'kgio'
 
 class SubSocket < Kgio::Socket
   attr_accessor :foo
-  def wait_writable
+  def kgio_wait_writable
     @foo = "waited"
   end
 end
@@ -23,7 +23,6 @@ class TestKgioTcpConnect < Test::Unit::TestCase
     @srv.close unless @srv.closed?
     Kgio.accept_cloexec = true
     Kgio.accept_nonblock = false
-    Kgio.wait_readable = Kgio.wait_writable = nil
   end
 
   def test_new
@@ -56,7 +55,6 @@ class TestKgioTcpConnect < Test::Unit::TestCase
   end
 
   def test_socket_start
-    Kgio::wait_writable = :wait_writable
     sock = SubSocket.start(@addr)
     assert_nil sock.foo
     ready = IO.select(nil, [ sock ])
@@ -65,7 +63,6 @@ class TestKgioTcpConnect < Test::Unit::TestCase
   end
 
   def test_wait_writable_set
-    Kgio::wait_writable = :wait_writable
     sock = SubSocket.new(@addr)
     assert_equal "waited", sock.foo
     assert_equal nil, sock.kgio_write("HELLO")

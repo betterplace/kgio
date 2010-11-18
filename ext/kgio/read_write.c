@@ -67,7 +67,7 @@ static int read_check(struct io_args *a, long n, const char *msg, int io_wait)
 		rb_str_set_len(a->buf, 0);
 		if (errno == EAGAIN) {
 			if (io_wait) {
-				kgio_call_wait_readable(a->io, a->fd);
+				(void)kgio_call_wait_readable(a->io);
 
 				/* buf may be modified in other thread/fiber */
 				rb_str_resize(a->buf, a->len);
@@ -112,8 +112,8 @@ retry:
  * Reads at most maxlen bytes from the stream socket.  Returns with a
  * newly allocated buffer, or may reuse an existing buffer if supplied.
  *
- * Calls the method assigned to Kgio.wait_readable, or blocks in a
- * thread-safe manner for writability.
+ * Calls whatever is is defined to be the kgio_wait_readable method
+ * for the class.
  *
  * Returns nil on EOF.
  *
@@ -232,7 +232,7 @@ done:
 			long written = RSTRING_LEN(a->buf) - a->len;
 
 			if (io_wait) {
-				kgio_call_wait_writable(a->io, a->fd);
+				(void)kgio_call_wait_writable(a->io);
 
 				/* buf may be modified in other thread/fiber */
 				a->len = RSTRING_LEN(a->buf) - written;
@@ -278,9 +278,8 @@ retry:
  *
  * Returns nil when the write completes.
  *
- * Calls the method Kgio.wait_writable if it is set.  Otherwise this
- * blocks in a thread-safe manner until all data is written or a
- * fatal error occurs.
+ * Calls whatever is is defined to be the kgio_wait_writable method
+ * for the class.
  */
 static VALUE kgio_write(VALUE io, VALUE str)
 {

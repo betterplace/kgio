@@ -5,10 +5,6 @@ require 'kgio'
 
 class TestConnectFDLeak < Test::Unit::TestCase
 
-  def teardown
-    Kgio.wait_readable = Kgio.wait_writable = nil
-  end
-
   def test_unix_socket
     nr = 0
     path = "/non/existent/path"

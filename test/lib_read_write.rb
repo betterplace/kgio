@@ -13,9 +13,6 @@ module LibReadWriteTest
       @rd.close unless @rd.closed?
       @wr.close unless @wr.closed?
     end
-    assert_nothing_raised do
-      Kgio.wait_readable = Kgio.wait_writable = nil
-    end
   end
 
   def test_read_zero
@@ -205,11 +202,10 @@ module LibReadWriteTest
 
   def test_monster_write_wait_writable
     @wr.instance_variable_set :@nr, 0
-    def @wr.wait_writable
+    def @wr.kgio_wait_writable
       @nr += 1
       IO.select(nil, [self])
     end
-    Kgio.wait_writable = :wait_writable
     buf = "." * 1024 * 1024 * 10
     thr = Thread.new { @wr.kgio_write(buf) }
     readed = @rd.read(buf.size)
@@ -220,7 +216,6 @@ module LibReadWriteTest
   end
 
   def test_wait_readable_ruby_default
-    assert_nothing_raised { Kgio.wait_readable = nil }
     elapsed = 0
     foo = nil
     t0 = Time.now
@@ -243,7 +238,6 @@ module LibReadWriteTest
     rescue Errno::EAGAIN
       break
     end while true
-    assert_nothing_raised { Kgio.wait_writable = nil }
     elapsed = 0
     foo = nil
     t0 = Time.now
@@ -261,10 +255,9 @@ module LibReadWriteTest
   end
 
   def test_wait_readable_method
-    def @rd.moo
+    def @rd.kgio_wait_readable
       defined?(@z) ? raise(RuntimeError, "Hello") : @z = "HI"
     end
-    assert_nothing_raised { Kgio.wait_readable = :moo }
     foo = nil
     begin
       foo = @rd.kgio_read(5)
@@ -277,18 +270,16 @@ module LibReadWriteTest
   end
 
   def test_tryread_wait_readable_method
-    def @rd.moo
+    def @rd.kgio_wait_readable
       raise "Hello"
     end
-    assert_nothing_raised { Kgio.wait_readable = :moo }
     assert_equal :wait_readable, @rd.kgio_tryread(5)
   end
 
   def test_trywrite_wait_readable_method
-    def @wr.moo
+    def @wr.kgio_wait_writable
       raise "Hello"
     end
-    assert_nothing_raised { Kgio.wait_writable = :moo }
     tmp = []
     buf = "." * 1024
     10000.times { tmp << @wr.kgio_trywrite(buf) }
@@ -296,10 +287,9 @@ module LibReadWriteTest
   end
 
   def test_wait_writable_method
-    def @wr.moo
+    def @wr.kgio_wait_writable
       defined?(@z) ? raise(RuntimeError, "Hello") : @z = "HI"
     end
-    assert_nothing_raised { Kgio.wait_writable = :moo }
     n = []
     begin
       loop { n << @wr.kgio_write("HIHIHIHIHIHI") }
