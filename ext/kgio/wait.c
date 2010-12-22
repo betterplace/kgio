@@ -11,7 +11,7 @@ static ID id_wait_rd, id_wait_wr;
 
 
 /*
- * Blocks the running Thread indefinitely until +self+ IO object is writable.
+ * Blocks the running Thread indefinitely until +self+ IO object is readable.
  * This method is automatically called by default whenever kgio_read needs
  * to block on input.
  *
@@ -29,9 +29,10 @@ static VALUE kgio_wait_readable(VALUE self)
 }
 
 /*
- * blocks the running Thread indefinitely until +self+ IO object is writable
+ * Blocks the running Thread indefinitely until +self+ IO object is writable.
  * This method is automatically called whenever kgio_write needs to
  * block on output.
+ *
  * Users of alternative threading/fiber libraries are
  * encouraged to override this method in their subclasses or modules to
  * work with their threading/blocking methods.
