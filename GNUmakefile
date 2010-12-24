@@ -3,7 +3,6 @@ all::
 RUBY = ruby
 RAKE = rake
 RSYNC = rsync
-GIT_URL = git://git.bogomips.org/kgio.git
 
 GIT-VERSION-FILE: .FORCE-GIT-VERSION-FILE
 	@./GIT-VERSION-GEN
@@ -32,56 +31,22 @@ clean:
 	-$(MAKE) -C ext/kgio clean
 	$(RM) $(setup_rb_files) ext/kgio/Makefile
 
-pkg_extra := GIT-VERSION-FILE NEWS ChangeLog
-manifest: $(pkg_extra)
-	$(RM) .manifest
-	$(MAKE) .manifest
+pkg_extra := GIT-VERSION-FILE NEWS ChangeLog LATEST
+ChangeLog: GIT-VERSION-FILE .wrongdoc.yml
+	wrongdoc prepare
 
-.manifest:
-	(git ls-files && \
-         for i in $@ $(pkg_extra) $(man1_paths); \
-	 do echo $$i; done) | LC_ALL=C sort > $@+
+.manifest: ChangeLog
+	(git ls-files && for i in $@ $(pkg_extra); do echo $$i; done) | \
+		LC_ALL=C sort > $@+
 	cmp $@+ $@ || mv $@+ $@
 	$(RM) $@+
 
-NEWS: GIT-VERSION-FILE
-	$(RAKE) -s news_rdoc > $@+
-	mv $@+ $@
-
-latest: NEWS
-	@awk 'BEGIN{RS="=== ";ORS=""}NR==2{sub(/\n$$/,"");print RS""$$0 }' $<
-
-SINCE =
-ChangeLog: LOG_VERSION = \
-  $(shell git rev-parse -q "$(GIT_VERSION)" >/dev/null 2>&1 && \
-          echo $(GIT_VERSION) || git describe)
-ifneq ($(SINCE),)
-ChangeLog: log_range = v$(SINCE)..$(LOG_VERSION)
-endif
-ChangeLog: GIT-VERSION-FILE
-	@echo "ChangeLog from $(GIT_URL) ($(log_range))" > $@+
-	@echo >> $@+
-	git log $(log_range) | sed -e 's/^/    /' >> $@+
-	mv $@+ $@
-
-news_atom := http://bogomips.org/kgio/NEWS.atom.xml
-cgit_atom := http://git.bogomips.org/cgit/kgio.git/atom/?h=master
-atom = <link rel="alternate" title="Atom feed" href="$(1)" \
-             type="application/atom+xml"/>
-
-# using rdoc 2.5.x
-doc: .document NEWS ChangeLog
-	rdoc -t "$(shell sed -ne '1s/^= //p' README)"
+doc: .document .wrongdoc.yml
+	find lib ext -type f -name '*.rbc' -exec rm -f '{}' ';'
+	$(RM) -r doc
+	wrongdoc all
 	install -m644 COPYING doc/COPYING
 	install -m644 $(shell grep '^[A-Z]' .document) doc/
-	$(RUBY) -i -p -e \
-	  '$$_.gsub!("</title>",%q{\&$(call atom,$(cgit_atom))})' \
-	  doc/ChangeLog.html
-	$(RUBY) -i -p -e \
-	  '$$_.gsub!("</title>",%q{\&$(call atom,$(news_atom))})' \
-	  doc/NEWS.html doc/README.html
-	$(RAKE) -s news_atom > doc/NEWS.atom.xml
-	cd doc && ln README.html tmp && mv tmp index.html
 
 ifneq ($(VERSION),)
 rfproject := rainbows
@@ -94,10 +59,10 @@ release_changes := release_changes-$(VERSION)
 release-notes: $(release_notes)
 release-changes: $(release_changes)
 $(release_changes):
-	$(RAKE) -s release_changes > $@+
+	wrongdoc release_changes > $@+
 	$(VISUAL) $@+ && test -s $@+ && mv $@+ $@
 $(release_notes):
-	GIT_URL=$(GIT_URL) $(RAKE) -s release_notes > $@+
+	wrongdoc release_notes > $@+
 	$(VISUAL) $@+ && test -s $@+ && mv $@+ $@
 
 # ensures we're actually on the tagged $(VERSION), only used for release
@@ -170,10 +135,8 @@ $(test_units): build
 # this requires GNU coreutils variants
 publish_doc:
 	-git set-file-times
-	$(RM) -r doc ChangeLog NEWS
-	$(MAKE) doc LOG_VERSION=$(shell git tag -l | tail -1)
-	$(MAKE) -s latest > doc/LATEST
-	find doc/images doc/js -type f | \
+	$(MAKE) doc
+	find doc/images -type f | \
 		TZ=UTC xargs touch -d '1970-01-01 00:00:00' doc/rdoc.css
 	$(MAKE) doc_gz
 	chmod 644 $$(find doc -type f)
@@ -184,8 +147,7 @@ publish_doc:
 # "gzip_static on" can serve the gzipped versions directly.
 doc_gz: docs = $(shell find doc -type f ! -regex '^.*\.\(gif\|jpg\|png\|gz\)$$')
 doc_gz:
-	touch doc/NEWS.atom.xml -d "$$(awk 'NR==1{print $$4,$$5,$$6}' NEWS)"
 	for i in $(docs); do \
 	  gzip --rsyncable -9 < $$i > $$i.gz; touch -r $$i $$i.gz; done
 
-.PHONY: .FORCE-GIT-VERSION-FILE doc manifest man test $(test_units)
+.PHONY: .FORCE-GIT-VERSION-FILE doc manifest test $(test_units)
