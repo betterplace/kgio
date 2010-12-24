@@ -57,7 +57,7 @@ task :raa_update do
     :category_minor => 'System',
     :url => s.homepage,
     :download => 'http://rubyforge.org/frs/?group_id=8977',
-    :license => "Ruby's",
+    :license => "LGPL",
     :description_style => 'Plain',
     :description => desc,
     :pass => password,
