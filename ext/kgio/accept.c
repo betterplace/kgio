@@ -56,8 +56,15 @@ static VALUE get_accepted(VALUE klass)
 static VALUE xaccept(void *ptr)
 {
 	struct accept_args *a = ptr;
+	int rv;
 
-	return (VALUE)accept4(a->fd, a->addr, a->addrlen, accept4_flags);
+	rv = accept_fn(a->fd, a->addr, a->addrlen, accept4_flags);
+	if (rv == -1 && errno == ENOSYS && accept_fn != my_accept4) {
+		accept_fn = my_accept4;
+		rv = accept_fn(a->fd, a->addr, a->addrlen, accept4_flags);
+	}
+
+	return (VALUE)rv;
 }
 
 #ifdef HAVE_RB_THREAD_BLOCKING_REGION

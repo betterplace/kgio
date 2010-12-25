@@ -13,10 +13,11 @@
 #      define SOCK_NONBLOCK O_NONBLOCK
 #    endif
 #  endif
+#endif /* !HAVE_ACCEPT4 */
 
 /* accept4() is currently a Linux-only goodie */
 static int
-accept4(int sockfd, struct sockaddr *addr, socklen_t *addrlen, int flags)
+my_accept4(int sockfd, struct sockaddr *addr, socklen_t *addrlen, int flags)
 {
 	int fd = accept(sockfd, addr, addrlen);
 
@@ -49,4 +50,10 @@ accept4(int sockfd, struct sockaddr *addr, socklen_t *addrlen, int flags)
 	}
 	return fd;
 }
-#endif /* !HAVE_ACCEPT4 */
+
+typedef int accept_fn_t(int, struct sockaddr *, socklen_t *, int);
+#ifdef HAVE_ACCEPT4
+static accept_fn_t *accept_fn = accept4;
+#else
+static accept_fn_t *accept_fn = my_accept4;
+#endif
