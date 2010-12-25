@@ -4,6 +4,9 @@ $-w = true
 require 'kgio'
 
 class TestAcceptClass < Test::Unit::TestCase
+  class FooSocket < Kgio::Socket
+  end
+
   def setup
     assert_equal Kgio::Socket, Kgio.accept_class
   end
@@ -48,5 +51,12 @@ class TestAcceptClass < Test::Unit::TestCase
     client = TCPSocket.new(@host, @port)
     IO.select([@srv])
     assert_instance_of Kgio::UNIXSocket, @srv.kgio_tryaccept
+
+    client = TCPSocket.new(@host, @port)
+    assert_instance_of FooSocket, @srv.kgio_accept(FooSocket)
+
+    client = TCPSocket.new(@host, @port)
+    IO.select([@srv])
+    assert_instance_of FooSocket, @srv.kgio_tryaccept(FooSocket)
   end
 end
