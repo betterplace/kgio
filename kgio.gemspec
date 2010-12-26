@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.authors = ["#{name} hackers"]
   s.date = Time.now.utc.strftime('%Y-%m-%d')
   s.description = readme_description
-  s.email = %q{kgio@bogomips.org}
+  s.email = %q{kgio@librelist.org}
   s.extra_rdoc_files = extra_rdoc_files(manifest)
   s.files = manifest
   s.rdoc_options = rdoc_options
