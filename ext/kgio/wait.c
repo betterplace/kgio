@@ -21,8 +21,10 @@ static ID id_wait_rd, id_wait_wr;
  */
 static VALUE kgio_wait_readable(VALUE self)
 {
+	int fd = my_fileno(self);
+
 	errno = EAGAIN;
-	if (!rb_io_wait_readable(my_fileno(self)))
+	if (!rb_io_wait_readable(fd))
 		rb_sys_fail("kgio_wait_readable");
 
 	return self;
@@ -39,8 +41,10 @@ static VALUE kgio_wait_readable(VALUE self)
  */
 static VALUE kgio_wait_writable(VALUE self)
 {
+	int fd = my_fileno(self);
+
 	errno = EAGAIN;
-	if (!rb_io_wait_writable(my_fileno(self)))
+	if (!rb_io_wait_writable(fd))
 		rb_sys_fail("kgio_wait_writable");
 
 	return self;
