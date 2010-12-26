@@ -64,6 +64,6 @@ static void init_sock_for_fd(void)
 }
 #endif /* sock_for_fd */
 #if SOCK_FOR_FD > 0
-#  define init_sock_for_fd() if (0)
+#  define init_sock_for_fd() for (;0;)
 #endif
 #endif /* SOCK_FOR_FD_H */

@@ -119,7 +119,7 @@ static VALUE unix_connect(VALUE klass, VALUE path, int io_wait)
 
 	StringValue(path);
 	len = RSTRING_LEN(path);
-	if (sizeof(addr.sun_path) <= len)
+	if ((long)sizeof(addr.sun_path) <= len)
 		rb_raise(rb_eArgError,
 		         "too long unix socket path (max: %dbytes)",
 		         (int)sizeof(addr.sun_path)-1);
