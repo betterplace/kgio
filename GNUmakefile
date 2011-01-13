@@ -82,14 +82,14 @@ gem: $(pkggem)
 install-gem: $(pkggem)
 	gem install $(CURDIR)/$<
 
-$(pkggem): manifest fix-perms
+$(pkggem): .manifest fix-perms
 	gem build $(rfpackage).gemspec
 	mkdir -p pkg
 	mv $(@F) $@
 
 $(pkgtgz): distdir = $(basename $@)
 $(pkgtgz): HEAD = v$(VERSION)
-$(pkgtgz): manifest fix-perms
+$(pkgtgz): .manifest fix-perms
 	@test -n "$(distdir)"
 	$(RM) -r $(distdir)
 	mkdir -p $(distdir)
@@ -150,4 +150,4 @@ doc_gz:
 	for i in $(docs); do \
 	  gzip --rsyncable -9 < $$i > $$i.gz; touch -r $$i $$i.gz; done
 
-.PHONY: .FORCE-GIT-VERSION-FILE doc manifest test $(test_units)
+.PHONY: .FORCE-GIT-VERSION-FILE doc test $(test_units)
