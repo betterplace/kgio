@@ -15,6 +15,14 @@ module LibReadWriteTest
     end
   end
 
+  def test_write_empty
+    assert_nil @wr.kgio_write("")
+  end
+
+  def test_trywrite_empty
+    assert_nil @wr.kgio_trywrite("")
+  end
+
   def test_read_zero
     assert_equal "", @rd.kgio_read(0)
     buf = "foo"
