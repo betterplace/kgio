@@ -1,6 +1,6 @@
 # -*- encoding: binary -*-
-cgit_url = "http://git.bogomips.org/cgit/kgio.git"
-git_url = 'git://git.bogomips.org/kgio.git'
+cgit_url = "http://bogomips.org/kgio.git"
+git_url = 'git://bogomips.org/kgio.git'
 
 desc "post news article to rubyforge"
 task :publish_news do

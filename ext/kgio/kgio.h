@@ -17,7 +17,7 @@
 #include <arpa/inet.h>
 #include <assert.h>
 
-#include "missing/ancient_ruby.h"
+#include "ancient_ruby.h"
 #include "nonblock.h"
 #include "my_fileno.h"
 

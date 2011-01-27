@@ -45,13 +45,13 @@ You may also install it via RubyGems.org:
 You can get the latest source via git from the following locations
 (these versions may not be stable):
 
-  git://git.bogomips.org/kgio.git
+  git://bogomips.org/kgio.git
   git://repo.or.cz/kgio.git (mirror)
 
 You may browse the code from the web and download the latest snapshot
 tarballs here:
 
-* http://git.bogomips.org/cgit/kgio.git (cgit)
+* http://bogomips.org/kgio.git (cgit)
 * http://repo.or.cz/w/kgio.git (gitweb)
 
 See the HACKING guide on how to contribute and build prerelease gems
