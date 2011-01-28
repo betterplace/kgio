@@ -133,14 +133,21 @@ static VALUE acceptor(int argc, const VALUE *argv)
 	rb_raise(rb_eArgError, "wrong number of arguments (%d for 1)", argc);
 }
 
+#if defined(__linux__)
+#  define post_accept kgio_nopush_accept
+#else
+#  define post_accept(a,b,c,d) for(;0;)
+#endif
+
 static VALUE
-my_accept(VALUE io, VALUE klass,
+my_accept(VALUE accept_io, VALUE klass,
           struct sockaddr *addr, socklen_t *addrlen, int nonblock)
 {
 	int client;
+	VALUE client_io;
 	struct accept_args a;
 
-	a.fd = my_fileno(io);
+	a.fd = my_fileno(accept_io);
 	a.addr = addr;
 	a.addrlen = addrlen;
 retry:
@@ -175,7 +182,9 @@ retry:
 			rb_sys_fail("accept");
 		}
 	}
-	return sock_for_fd(klass, client);
+	client_io = sock_for_fd(klass, client);
+	post_accept(accept_io, client_io, a.fd, client);
+	return client_io;
 }
 
 static void in_addr_set(VALUE io, struct sockaddr_in *addr)

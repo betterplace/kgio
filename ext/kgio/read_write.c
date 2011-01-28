@@ -164,6 +164,7 @@ static VALUE my_recv(int io_wait, int argc, VALUE *argv, VALUE io)
 	long n;
 
 	prepare_read(&a, argc, argv, io);
+	kgio_nopush_recv(io, a.fd);
 
 	if (a.len > 0) {
 retry:
@@ -320,6 +321,8 @@ retry:
 	n = (long)send(a.fd, a.ptr, a.len, MSG_DONTWAIT);
 	if (write_check(&a, n, "send", io_wait) != 0)
 		goto retry;
+	if (TYPE(a.buf) != T_SYMBOL)
+		kgio_nopush_send(io, a.fd);
 	return a.buf;
 }
 
