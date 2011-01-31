@@ -136,7 +136,7 @@ static VALUE acceptor(int argc, const VALUE *argv)
 #if defined(__linux__)
 #  define post_accept kgio_autopush_accept
 #else
-#  define post_accept(a,b,c,d) for(;0;)
+#  define post_accept(a,b) for(;0;)
 #endif
 
 static VALUE
@@ -183,7 +183,7 @@ retry:
 		}
 	}
 	client_io = sock_for_fd(klass, client);
-	post_accept(accept_io, client_io, a.fd, client);
+	post_accept(accept_io, client_io);
 	return client_io;
 }
 

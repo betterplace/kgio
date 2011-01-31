@@ -35,9 +35,9 @@ void init_kgio_accept(void);
 void init_kgio_connect(void);
 void init_kgio_autopush(void);
 
-void kgio_autopush_accept(VALUE, VALUE, int, int);
-void kgio_autopush_recv(VALUE, int);
-void kgio_autopush_send(VALUE, int);
+void kgio_autopush_accept(VALUE, VALUE);
+void kgio_autopush_recv(VALUE);
+void kgio_autopush_send(VALUE);
 
 VALUE kgio_call_wait_writable(VALUE io);
 VALUE kgio_call_wait_readable(VALUE io);
