@@ -14,23 +14,23 @@
 
 #include "kgio.h"
 
-enum nopush_state {
-	NOPUSH_STATE_IGNORE = -1,
-	NOPUSH_STATE_WRITER = 0,
-	NOPUSH_STATE_WRITTEN = 1,
-	NOPUSH_STATE_ACCEPTOR = 2
+enum autopush_state {
+	AUTOPUSH_STATE_IGNORE = -1,
+	AUTOPUSH_STATE_WRITER = 0,
+	AUTOPUSH_STATE_WRITTEN = 1,
+	AUTOPUSH_STATE_ACCEPTOR = 2
 };
 
-struct nopush_socket {
+struct autopush_socket {
 	VALUE io;
-	enum nopush_state state;
+	enum autopush_state state;
 };
 
 static int enabled;
 static long capa;
-static struct nopush_socket *active;
+static struct autopush_socket *active;
 
-static void set_acceptor_state(struct nopush_socket *nps, int fd);
+static void set_acceptor_state(struct autopush_socket *aps, int fd);
 static void flush_pending_data(int fd);
 
 static void grow(int fd)
@@ -39,55 +39,55 @@ static void grow(int fd)
 	size_t size;
 
 	assert(new_capa > capa && "grow()-ing for low fd");
-	size = new_capa * sizeof(struct nopush_socket);
+	size = new_capa * sizeof(struct autopush_socket);
 	active = xrealloc(active, size);
 
 	while (capa < new_capa) {
-		struct nopush_socket *nps = &active[capa++];
+		struct autopush_socket *aps = &active[capa++];
 
-		nps->io = Qnil;
-		nps->state = NOPUSH_STATE_IGNORE;
+		aps->io = Qnil;
+		aps->state = AUTOPUSH_STATE_IGNORE;
 	}
 }
 
-static VALUE s_get_nopush_smart(VALUE self)
+static VALUE s_get_autopush(VALUE self)
 {
 	return enabled ? Qtrue : Qfalse;
 }
 
-static VALUE s_set_nopush_smart(VALUE self, VALUE val)
+static VALUE s_set_autopush(VALUE self, VALUE val)
 {
 	enabled = RTEST(val);
 
 	return val;
 }
 
-void init_kgio_nopush(void)
+void init_kgio_autopush(void)
 {
 	VALUE m = rb_define_module("Kgio");
 
-	rb_define_singleton_method(m, "nopush_smart?", s_get_nopush_smart, 0);
-	rb_define_singleton_method(m, "nopush_smart=", s_set_nopush_smart, 1);
+	rb_define_singleton_method(m, "autopush?", s_get_autopush, 0);
+	rb_define_singleton_method(m, "autopush=", s_set_autopush, 1);
 }
 
 /*
  * called after a successful write, just mark that we've put something
  * in the skb and will need to uncork on the next write.
  */
-void kgio_nopush_send(VALUE io, int fd)
+void kgio_autopush_send(VALUE io, int fd)
 {
-	struct nopush_socket *nps;
+	struct autopush_socket *aps;
 
 	if (fd >= capa) return;
-	nps = &active[fd];
-	if (nps->io == io && nps->state == NOPUSH_STATE_WRITER)
-		nps->state = NOPUSH_STATE_WRITTEN;
+	aps = &active[fd];
+	if (aps->io == io && aps->state == AUTOPUSH_STATE_WRITER)
+		aps->state = AUTOPUSH_STATE_WRITTEN;
 }
 
 /* called on successful accept() */
-void kgio_nopush_accept(VALUE accept_io, VALUE io, int accept_fd, int fd)
+void kgio_autopush_accept(VALUE accept_io, VALUE io, int accept_fd, int fd)
 {
-	struct nopush_socket *accept_nps, *client_nps;
+	struct autopush_socket *accept_aps, *client_aps;
 
 	if (!enabled)
 		return;
@@ -96,40 +96,40 @@ void kgio_nopush_accept(VALUE accept_io, VALUE io, int accept_fd, int fd)
 	if (fd >= capa || accept_fd >= capa)
 		grow(fd > accept_fd ? fd : accept_fd);
 
-	accept_nps = &active[accept_fd];
+	accept_aps = &active[accept_fd];
 
-	if (accept_nps->io != accept_io) {
-		accept_nps->io = accept_io;
-		set_acceptor_state(accept_nps, fd);
+	if (accept_aps->io != accept_io) {
+		accept_aps->io = accept_io;
+		set_acceptor_state(accept_aps, fd);
 	}
-	client_nps = &active[fd];
-	client_nps->io = io;
-	if (accept_nps->state == NOPUSH_STATE_ACCEPTOR)
-		client_nps->state = NOPUSH_STATE_WRITER;
+	client_aps = &active[fd];
+	client_aps->io = io;
+	if (accept_aps->state == AUTOPUSH_STATE_ACCEPTOR)
+		client_aps->state = AUTOPUSH_STATE_WRITER;
 	else
-		client_nps->state = NOPUSH_STATE_IGNORE;
+		client_aps->state = AUTOPUSH_STATE_IGNORE;
 }
 
-void kgio_nopush_recv(VALUE io, int fd)
+void kgio_autopush_recv(VALUE io, int fd)
 {
-	struct nopush_socket *nps;
+	struct autopush_socket *aps;
 
 	if (fd >= capa)
 		return;
 
-	nps = &active[fd];
-	if (nps->io != io || nps->state != NOPUSH_STATE_WRITTEN)
+	aps = &active[fd];
+	if (aps->io != io || aps->state != AUTOPUSH_STATE_WRITTEN)
 		return;
 
 	/* reset internal state and flush corked buffers */
-	nps->state = NOPUSH_STATE_WRITER;
+	aps->state = AUTOPUSH_STATE_WRITER;
 	if (enabled)
 		flush_pending_data(fd);
 }
 
 #ifdef __linux__
 #include <netinet/tcp.h>
-static void set_acceptor_state(struct nopush_socket *nps, int fd)
+static void set_acceptor_state(struct autopush_socket *aps, int fd)
 {
 	int corked = 0;
 	socklen_t optlen = sizeof(int);
@@ -138,11 +138,11 @@ static void set_acceptor_state(struct nopush_socket *nps, int fd)
 		if (errno != EOPNOTSUPP)
 			rb_sys_fail("getsockopt(SOL_TCP, TCP_CORK)");
 		errno = 0;
-		nps->state = NOPUSH_STATE_IGNORE;
+		aps->state = AUTOPUSH_STATE_IGNORE;
 	} else if (corked) {
-		nps->state = NOPUSH_STATE_ACCEPTOR;
+		aps->state = AUTOPUSH_STATE_ACCEPTOR;
 	} else {
-		nps->state = NOPUSH_STATE_IGNORE;
+		aps->state = AUTOPUSH_STATE_IGNORE;
 	}
 }
 

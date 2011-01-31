@@ -134,7 +134,7 @@ static VALUE acceptor(int argc, const VALUE *argv)
 }
 
 #if defined(__linux__)
-#  define post_accept kgio_nopush_accept
+#  define post_accept kgio_autopush_accept
 #else
 #  define post_accept(a,b,c,d) for(;0;)
 #endif

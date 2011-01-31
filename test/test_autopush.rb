@@ -4,12 +4,12 @@ RUBY_PLATFORM =~ /linux/ and require 'strace'
 $-w = true
 require 'kgio'
 
-class TestNoPushSmart < Test::Unit::TestCase
+class TestAutopush < Test::Unit::TestCase
   TCP_CORK = 3
 
   def setup
-    Kgio.nopush_smart = false
-    assert_equal false, Kgio.nopush_smart?
+    Kgio.autopush = false
+    assert_equal false, Kgio.autopush?
 
     @host = ENV["TEST_HOST"] || '127.0.0.1'
     @srv = Kgio::TCPServer.new(@host, 0)
@@ -19,8 +19,8 @@ class TestNoPushSmart < Test::Unit::TestCase
     @port = @srv.addr[1]
   end
 
-  def test_nopush_smart_true_unix
-    Kgio.nopush_smart = true
+  def test_autopush_true_unix
+    Kgio.autopush = true
     tmp = Tempfile.new('kgio_unix')
     @path = tmp.path
     File.unlink(@path)
@@ -42,9 +42,9 @@ class TestNoPushSmart < Test::Unit::TestCase
     File.unlink(@path) rescue nil
   end
 
-  def test_nopush_smart_false
-    Kgio.nopush_smart = nil
-    assert_equal false, Kgio.nopush_smart?
+  def test_autopush_false
+    Kgio.autopush = nil
+    assert_equal false, Kgio.autopush?
 
     @wr = Kgio::TCPSocket.new(@host, @port)
     io, err = Strace.me { @rd = @srv.kgio_accept }
@@ -62,9 +62,9 @@ class TestNoPushSmart < Test::Unit::TestCase
     assert_equal "HI\n", rbuf
   end if RUBY_PLATFORM =~ /linux/
 
-  def test_nopush_smart_true
-    Kgio.nopush_smart = true
-    assert_equal true, Kgio.nopush_smart?
+  def test_autopush_true
+    Kgio.autopush = true
+    assert_equal true, Kgio.autopush?
     @wr = Kgio::TCPSocket.new(@host, @port)
     io, err = Strace.me { @rd = @srv.kgio_accept }
     assert_nil err
@@ -105,6 +105,6 @@ class TestNoPushSmart < Test::Unit::TestCase
   end if RUBY_PLATFORM =~ /linux/
 
   def teardown
-    Kgio.nopush_smart = false
+    Kgio.autopush = false
   end
 end
