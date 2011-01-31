@@ -13,6 +13,20 @@
  */
 
 #include "kgio.h"
+#include <netinet/tcp.h>
+
+/*
+ * As of FreeBSD 4.5, TCP_NOPUSH == TCP_CORK
+ * ref: http://dotat.at/writing/nopush.html
+ * We won't care for older FreeBSD since nobody runs Ruby on them...
+ */
+#ifdef TCP_CORK
+#  define KGIO_NOPUSH TCP_CORK
+#elif defined(TCP_NOPUSH)
+#  define KGIO_NOPUSH TCP_NOPUSH
+#endif
+
+#ifdef KGIO_NOPUSH
 static ID id_autopush_state;
 static int enabled;
 
@@ -98,8 +112,6 @@ void kgio_autopush_recv(VALUE io)
 	}
 }
 
-#ifdef __linux__
-#include <netinet/tcp.h>
 static enum autopush_state detect_acceptor_state(VALUE io)
 {
 	int corked = 0;
@@ -107,9 +119,9 @@ static enum autopush_state detect_acceptor_state(VALUE io)
 	socklen_t optlen = sizeof(int);
 	enum autopush_state state;
 
-	if (getsockopt(fd, SOL_TCP, TCP_CORK, &corked, &optlen) != 0) {
+	if (getsockopt(fd, IPPROTO_TCP, KGIO_NOPUSH, &corked, &optlen) != 0) {
 		if (errno != EOPNOTSUPP)
-			rb_sys_fail("getsockopt(SOL_TCP, TCP_CORK)");
+			rb_sys_fail("getsockopt(TCP_CORK/TCP_NOPUSH)");
 		errno = 0;
 		state = AUTOPUSH_STATE_ACCEPTOR_IGNORE;
 	} else if (corked) {
@@ -132,13 +144,15 @@ static void push_pending_data(VALUE io)
 	const socklen_t optlen = sizeof(int);
 	const int fd = my_fileno(io);
 
-	if (setsockopt(fd, SOL_TCP, TCP_CORK, &optval, optlen) != 0)
-		rb_sys_fail("setsockopt(SOL_TCP, TCP_CORK, 0)");
+	if (setsockopt(fd, IPPROTO_TCP, KGIO_NOPUSH, &optval, optlen) != 0)
+		rb_sys_fail("setsockopt(TCP_CORK/TCP_NOPUSH, 0)");
 	/* immediately recork */
 	optval = 1;
-	if (setsockopt(fd, SOL_TCP, TCP_CORK, &optval, optlen) != 0)
-		rb_sys_fail("setsockopt(SOL_TCP, TCP_CORK, 1)");
+	if (setsockopt(fd, IPPROTO_TCP, KGIO_NOPUSH, &optval, optlen) != 0)
+		rb_sys_fail("setsockopt(TCP_CORK, 1)");
 }
-/* TODO: add FreeBSD support */
-
-#endif /* linux */
+#else /* !KGIO_NOPUSH */
+void init_kgio_autopush(void)
+{
+}
+#endif /* ! KGIO_NOPUSH */
