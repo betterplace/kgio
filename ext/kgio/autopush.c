@@ -38,6 +38,26 @@ enum autopush_state {
 	AUTOPUSH_STATE_ACCEPTOR = 3
 };
 
+#if defined(R_CAST) && \
+    defined(HAVE_TYPE_STRUCT_RFILE) && \
+    defined(HAVE_TYPE_STRUCT_ROBJECT) && \
+    ((SIZEOF_STRUCT_RFILE + SIZEOF_INT) <= (SIZEOF_STRUCT_ROBJECT))
+
+struct AutopushSocket {
+	struct RFile rfile;
+	enum autopush_state autopush_state;
+};
+
+static enum autopush_state state_get(VALUE io)
+{
+	return ((struct AutopushSocket *)(io))->autopush_state;
+}
+
+static void state_set(VALUE io, enum autopush_state state)
+{
+	((struct AutopushSocket *)(io))->autopush_state = state;
+}
+#else
 static enum autopush_state state_get(VALUE io)
 {
 	VALUE val;
@@ -53,6 +73,7 @@ static void state_set(VALUE io, enum autopush_state state)
 {
 	rb_ivar_set(io, id_autopush_state, INT2NUM(state));
 }
+#endif /* IVAR fallback */
 
 static enum autopush_state detect_acceptor_state(VALUE io);
 static void push_pending_data(VALUE io);

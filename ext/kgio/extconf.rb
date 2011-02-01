@@ -3,8 +3,9 @@ $CPPFLAGS << ' -D_GNU_SOURCE'
 
 have_func('accept4', %w(sys/socket.h))
 if have_header('ruby/io.h')
-  have_struct_member("rb_io_t", "fd", "ruby/io.h")
-  have_struct_member("rb_io_t", "mode", "ruby/io.h")
+  rubyio = %w(ruby.h ruby/io.h)
+  have_struct_member("rb_io_t", "fd", rubyio)
+  have_struct_member("rb_io_t", "mode", rubyio)
 else
   rubyio = %w(ruby.h rubyio.h)
   rb_io_t = have_type("OpenFile", rubyio) ? "OpenFile" : "rb_io_t"
@@ -13,6 +14,9 @@ else
   have_struct_member(rb_io_t, "mode", rubyio)
   have_func('rb_fdopen')
 end
+have_type("struct RFile", rubyio) and check_sizeof("struct RFile", rubyio)
+have_type("struct RObject") and check_sizeof("struct RObject")
+check_sizeof("int")
 have_func('rb_io_ascii8bit_binmode')
 have_func('rb_thread_blocking_region')
 have_func('rb_str_set_len')
