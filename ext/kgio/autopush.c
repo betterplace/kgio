@@ -28,7 +28,7 @@
 
 #ifdef KGIO_NOPUSH
 static ID id_autopush_state;
-static int enabled;
+static int enabled = 1;
 
 enum autopush_state {
 	AUTOPUSH_STATE_ACCEPTOR_IGNORE = -1,
