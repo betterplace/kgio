@@ -350,6 +350,44 @@ static VALUE kgio_trysend(VALUE io, VALUE str)
 #  define kgio_trysend kgio_trywrite
 #endif /* ! USE_MSG_DONTWAIT */
 
+/*
+ * call-seq:
+ *
+ *	Kgio.tryread(io, maxlen)           ->  buffer
+ *	Kgio.tryread(io, maxlen, buffer)   ->  buffer
+ *
+ * Returns nil on EOF.
+ * Returns :wait_readable if EAGAIN is encountered.
+ *
+ * Maybe used in place of PipeMethods#kgio_tryread for non-Kgio objects
+ */
+static VALUE s_tryread(int argc, VALUE *argv, VALUE mod)
+{
+	if (argc <= 1)
+		rb_raise(rb_eArgError, "wrong number of arguments");
+	return my_read(0, argc - 1, &argv[1], argv[0]);
+}
+
+/*
+ * call-seq:
+ *
+ *	Kgio.trywrite(io, str)    -> nil or :wait_writable
+ *
+ * Returns nil if the write was completed in full.
+ *
+ * Returns a String containing the unwritten portion if EAGAIN
+ * was encountered, but some portion was successfully written.
+ *
+ * Returns :wait_writable if EAGAIN is encountered and nothing
+ * was written.
+ *
+ * Maybe used in place of PipeMethods#kgio_trywrite for non-Kgio objects
+ */
+static VALUE s_trywrite(VALUE mod, VALUE io, VALUE str)
+{
+	return my_write(io, str, 0);
+}
+
 void init_kgio_read_write(void)
 {
 	VALUE mPipeMethods, mSocketMethods;
@@ -358,6 +396,9 @@ void init_kgio_read_write(void)
 
 	sym_wait_readable = ID2SYM(rb_intern("wait_readable"));
 	sym_wait_writable = ID2SYM(rb_intern("wait_writable"));
+
+	rb_define_singleton_method(mKgio, "tryread", s_tryread, -1);
+	rb_define_singleton_method(mKgio, "trywrite", s_trywrite, 2);
 
 	/*
 	 * Document-module: Kgio::PipeMethods
