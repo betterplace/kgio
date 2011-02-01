@@ -1,6 +1,7 @@
 #include "kgio.h"
 static VALUE sym_wait_readable, sym_wait_writable;
 static VALUE eErrno_EPIPE, eErrno_ECONNRESET;
+static ID id_set_backtrace;
 
 /*
  * we know MSG_DONTWAIT works properly on all stream sockets under Linux
@@ -21,7 +22,7 @@ static void raise_empty_bt(VALUE err, const char *msg)
 	VALUE exc = rb_exc_new2(err, msg);
 	VALUE bt = rb_ary_new();
 
-	rb_funcall(exc, rb_intern("set_backtrace"), 1, bt);
+	rb_funcall(exc, id_set_backtrace, 1, bt);
 	rb_exc_raise(exc);
 }
 
@@ -444,7 +445,7 @@ void init_kgio_read_write(void)
 	 * Kgio::LOCALHOST constant for UNIX domain sockets.
 	 */
 	rb_define_attr(mSocketMethods, "kgio_addr", 1, 1);
-
+	id_set_backtrace = rb_intern("set_backtrace");
 	eErrno_EPIPE = rb_const_get(rb_mErrno, rb_intern("EPIPE"));
 	eErrno_ECONNRESET = rb_const_get(rb_mErrno, rb_intern("ECONNRESET"));
 	rb_include_module(mPipeMethods, mWaiters);
