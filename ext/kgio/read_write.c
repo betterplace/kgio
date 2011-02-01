@@ -14,6 +14,7 @@ static VALUE eErrno_EPIPE, eErrno_ECONNRESET;
 NORETURN(static void raise_empty_bt(VALUE, const char *));
 NORETURN(static void my_eof_error(void));
 NORETURN(static void wr_sys_fail(const char *));
+NORETURN(static void rd_sys_fail(const char *));
 
 static void raise_empty_bt(VALUE err, const char *msg)
 {
@@ -36,6 +37,15 @@ static void wr_sys_fail(const char *msg)
 		errno = 0;
 		raise_empty_bt(eErrno_EPIPE, msg);
 	case ECONNRESET:
+		errno = 0;
+		raise_empty_bt(eErrno_ECONNRESET, msg);
+	}
+	rb_sys_fail(msg);
+}
+
+static void rd_sys_fail(const char *msg)
+{
+	if (errno == ECONNRESET) {
 		errno = 0;
 		raise_empty_bt(eErrno_ECONNRESET, msg);
 	}
@@ -78,7 +88,7 @@ static int read_check(struct io_args *a, long n, const char *msg, int io_wait)
 				return 0;
 			}
 		}
-		rb_sys_fail(msg);
+		rd_sys_fail(msg);
 	}
 	rb_str_set_len(a->buf, n);
 	if (n == 0)
