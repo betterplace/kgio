@@ -23,6 +23,20 @@ class TestAutopush < Test::Unit::TestCase
     @port = @srv.addr[1]
   end
 
+  def test_autopush_accessors
+    Kgio.autopush = true
+    opt = RUBY_PLATFORM =~ /freebsd/ ? TCP_NOPUSH : TCP_CORK
+    s = Kgio::TCPSocket.new(@host, @port)
+    assert_equal 0, s.getsockopt(Socket::IPPROTO_TCP, opt).unpack('i')[0]
+    assert ! s.kgio_autopush?
+    s.kgio_autopush = true
+    assert s.kgio_autopush?
+    assert_nothing_raised { s.kgio_write 'asdf' }
+    assert_equal :wait_readable, s.kgio_tryread(1)
+    assert s.kgio_autopush?
+    assert_equal 1, s.getsockopt(Socket::IPPROTO_TCP, opt).unpack('i')[0]
+  end
+
   def test_autopush_true_unix
     Kgio.autopush = true
     tmp = Tempfile.new('kgio_unix')

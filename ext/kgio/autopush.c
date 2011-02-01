@@ -90,12 +90,36 @@ static VALUE s_set_autopush(VALUE self, VALUE val)
 	return val;
 }
 
+static VALUE autopush_get(VALUE io)
+{
+	return state_get(io) <= 0 ? Qfalse : Qtrue;
+}
+
+static VALUE autopush_set(VALUE io, VALUE vbool)
+{
+	int fd = my_fileno(io);
+	int val;
+	socklen_t len = sizeof(val);
+
+	if (RTEST(vbool))
+		state_set(io, AUTOPUSH_STATE_WRITER);
+	else
+		state_set(io, AUTOPUSH_STATE_IGNORE);
+	return vbool;
+}
+
 void init_kgio_autopush(void)
 {
-	VALUE m = rb_define_module("Kgio");
+	VALUE mKgio = rb_define_module("Kgio");
+	VALUE tmp;
 
-	rb_define_singleton_method(m, "autopush?", s_get_autopush, 0);
-	rb_define_singleton_method(m, "autopush=", s_set_autopush, 1);
+	rb_define_singleton_method(mKgio, "autopush?", s_get_autopush, 0);
+	rb_define_singleton_method(mKgio, "autopush=", s_set_autopush, 1);
+
+	tmp = rb_define_module_under(mKgio, "SocketMethods");
+	rb_define_method(tmp, "kgio_autopush=", autopush_set, 1);
+	rb_define_method(tmp, "kgio_autopush?", autopush_get, 0);
+
 	id_autopush_state = rb_intern("@kgio_autopush_state");
 }
 
@@ -170,7 +194,7 @@ static void push_pending_data(VALUE io)
 	/* immediately recork */
 	optval = 1;
 	if (setsockopt(fd, IPPROTO_TCP, KGIO_NOPUSH, &optval, optlen) != 0)
-		rb_sys_fail("setsockopt(TCP_CORK, 1)");
+		rb_sys_fail("setsockopt(TCP_CORK/TCP_NOPUSH, 1)");
 }
 #else /* !KGIO_NOPUSH */
 void init_kgio_autopush(void)
