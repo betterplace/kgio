@@ -187,16 +187,29 @@ retry:
 	return client_io;
 }
 
-static void in_addr_set(VALUE io, struct sockaddr_in *addr)
+static void in_addr_set(VALUE io, struct sockaddr_storage *addr, socklen_t len)
 {
-	VALUE host = rb_str_new(0, INET_ADDRSTRLEN);
-	socklen_t addrlen = (socklen_t)INET_ADDRSTRLEN;
-	const char *name;
+	VALUE host;
+	int host_len, rc;
+	char *host_ptr;
 
-	name = inet_ntop(AF_INET, &addr->sin_addr, RSTRING_PTR(host), addrlen);
-	if (name == NULL)
-		rb_sys_fail("inet_ntop");
-	rb_str_set_len(host, strlen(name));
+	switch (addr->ss_family) {
+	case AF_INET:
+		host_len = (long)INET_ADDRSTRLEN;
+		break;
+	case AF_INET6:
+		host_len = (long)INET6_ADDRSTRLEN;
+		break;
+	default:
+		rb_raise(rb_eRuntimeError, "unsupported address family");
+	}
+	host = rb_str_new(NULL, host_len);
+	host_ptr = RSTRING_PTR(host);
+	rc = getnameinfo((struct sockaddr *)addr, len,
+			 host_ptr, host_len, NULL, 0, NI_NUMERICHOST);
+	if (rc != 0)
+		rb_raise(rb_eRuntimeError, "getnameinfo: %s", gai_strerror(rc));
+	rb_str_set_len(host, strlen(host_ptr));
 	rb_ivar_set(io, iv_kgio_addr, host);
 }
 
@@ -219,13 +232,13 @@ static void in_addr_set(VALUE io, struct sockaddr_in *addr)
  */
 static VALUE tcp_tryaccept(int argc, VALUE *argv, VALUE io)
 {
-	struct sockaddr_in addr;
-	socklen_t addrlen = sizeof(struct sockaddr_in);
+	struct sockaddr_storage addr;
+	socklen_t addrlen = sizeof(struct sockaddr_storage);
 	VALUE klass = acceptor(argc, argv);
 	VALUE rv = my_accept(io, klass, (struct sockaddr *)&addr, &addrlen, 1);
 
 	if (!NIL_P(rv))
-		in_addr_set(rv, &addr);
+		in_addr_set(rv, &addr, addrlen);
 	return rv;
 }
 
@@ -249,12 +262,12 @@ static VALUE tcp_tryaccept(int argc, VALUE *argv, VALUE io)
  */
 static VALUE tcp_accept(int argc, VALUE *argv, VALUE io)
 {
-	struct sockaddr_in addr;
-	socklen_t addrlen = sizeof(struct sockaddr_in);
+	struct sockaddr_storage addr;
+	socklen_t addrlen = sizeof(struct sockaddr_storage);
 	VALUE klass = acceptor(argc, argv);
 	VALUE rv = my_accept(io, klass, (struct sockaddr *)&addr, &addrlen, 0);
 
-	in_addr_set(rv, &addr);
+	in_addr_set(rv, &addr, addrlen);
 	return rv;
 }
 

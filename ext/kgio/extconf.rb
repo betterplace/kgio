@@ -1,6 +1,13 @@
 require 'mkmf'
 $CPPFLAGS << ' -D_GNU_SOURCE'
+$CPPFLAGS << ' -DPOSIX_C_SOURCE=1'
 
+have_func("getaddrinfo", %w(sys/types.h sys/socket.h netdb.h)) or
+  abort "getaddrinfo required"
+have_func("getnameinfo", %w(sys/socket.h netdb.h)) or
+  abort "getnameinfo required"
+have_type("struct sockaddr_storage", %w(sys/types.h sys/socket.h)) or
+  abort "struct sockaddr_storage required"
 have_func('accept4', %w(sys/socket.h))
 if have_header('ruby/io.h')
   rubyio = %w(ruby.h ruby/io.h)

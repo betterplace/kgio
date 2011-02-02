@@ -57,20 +57,37 @@ my_connect(VALUE klass, int io_wait, int domain, void *addr, socklen_t addrlen)
 
 static VALUE tcp_connect(VALUE klass, VALUE ip, VALUE port, int io_wait)
 {
-	struct sockaddr_in addr = { 0 };
+	struct addrinfo hints;
+	struct sockaddr_storage addr;
+	int rc;
+	struct addrinfo *res;
+	VALUE sock;
+	const char *ipname = StringValuePtr(ip);
+	char ipport[6];
+	unsigned uport = FIX2UINT(port);
 
-	addr.sin_family = AF_INET;
-	addr.sin_port = htons((unsigned short)NUM2INT(port));
+	rc = snprintf(ipport, sizeof(ipport), "%u", uport);
+	if (rc >= (int)sizeof(ipport) || rc <= 0)
+		rb_raise(rb_eArgError, "invalid TCP port: %u", uport);
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_protocol = IPPROTO_TCP;
+	/* disallow non-deterministic DNS lookups */
+	hints.ai_flags = AI_NUMERICHOST | AI_NUMERICSERV;
 
-	switch (inet_pton(AF_INET, StringValuePtr(ip), &addr.sin_addr)) {
-	case 1:
-		return my_connect(klass, io_wait, PF_INET, &addr, sizeof(addr));
-	case -1:
-		rb_sys_fail("inet_pton");
-	}
-	rb_raise(rb_eArgError, "invalid address: %s", StringValuePtr(ip));
+	rc = getaddrinfo(ipname, ipport, &hints, &res);
+	if (rc != 0)
+		rb_raise(rb_eArgError, "getaddrinfo(%s:%s): %s",
+			 ipname, ipport, gai_strerror(rc));
 
-	return Qnil;
+	/* copy needed data and free ASAP to avoid needing rb_ensure */
+	hints.ai_family = res->ai_family;
+	hints.ai_addrlen = res->ai_addrlen;
+	memcpy(&addr, res->ai_addr, res->ai_addrlen);
+	freeaddrinfo(res);
+
+	return my_connect(klass, io_wait, hints.ai_family,
+	                  &addr, hints.ai_addrlen);
 }
 
 /*
@@ -173,12 +190,10 @@ static VALUE stream_connect(VALUE klass, VALUE addr, int io_wait)
 	} else {
 		rb_raise(rb_eTypeError, "invalid address");
 	}
-	switch (((struct sockaddr_in *)(sockaddr))->sin_family) {
+	switch (((struct sockaddr_storage *)(sockaddr))->ss_family) {
 	case AF_UNIX: domain = PF_UNIX; break;
 	case AF_INET: domain = PF_INET; break;
-#ifdef AF_INET6 /* IPv6 support incomplete */
 	case AF_INET6: domain = PF_INET6; break;
-#endif /* AF_INET6 */
 	default:
 		rb_raise(rb_eArgError, "invalid address family");
 	}

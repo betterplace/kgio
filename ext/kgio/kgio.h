@@ -16,6 +16,7 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <assert.h>
+#include <netdb.h>
 
 #include "ancient_ruby.h"
 #include "nonblock.h"

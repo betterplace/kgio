@@ -10,8 +10,8 @@ module LibReadWriteTest
 
   def teardown
     assert_nothing_raised do
-      @rd.close unless @rd.closed?
-      @wr.close unless @wr.closed?
+      @rd.close if defined?(@rd) && ! @rd.closed?
+      @wr.close if defined?(@wr) && ! @wr.closed?
     end
   end
 
