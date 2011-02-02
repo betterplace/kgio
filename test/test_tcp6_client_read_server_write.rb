@@ -1,11 +1,11 @@
 require './test/lib_read_write'
 
 begin
-  tmp = TCPServer.new(ENV["TEST_HOST6"] || '::1')
+  tmp = TCPServer.new(ENV["TEST_HOST6"] || '::1', 0)
   ipv6_enabled = true
 rescue => e
   warn "skipping IPv6 tests, host does not seem to be IPv6 enabled:"
-  warn "  #{e}"
+  warn "  #{e.class}: #{e}"
   ipv6_enabled = false
 end
 
