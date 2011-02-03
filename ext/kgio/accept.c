@@ -187,7 +187,7 @@ retry:
 	return client_io;
 }
 
-static void in_addr_set(VALUE io, struct sockaddr_storage *addr, socklen_t len)
+static VALUE in_addr_set(VALUE io, struct sockaddr_storage *addr, socklen_t len)
 {
 	VALUE host;
 	int host_len, rc;
@@ -210,7 +210,27 @@ static void in_addr_set(VALUE io, struct sockaddr_storage *addr, socklen_t len)
 	if (rc != 0)
 		rb_raise(rb_eRuntimeError, "getnameinfo: %s", gai_strerror(rc));
 	rb_str_set_len(host, strlen(host_ptr));
-	rb_ivar_set(io, iv_kgio_addr, host);
+	return rb_ivar_set(io, iv_kgio_addr, host);
+}
+
+/*
+ * call-seq:
+ *
+ *	io.kgio_addr! => refreshes the given sock address
+ */
+static VALUE addr_bang(VALUE io)
+{
+	int fd = my_fileno(io);
+	struct sockaddr_storage addr;
+	socklen_t len = sizeof(struct sockaddr_storage);
+
+	if (getpeername(fd, (struct sockaddr *)&addr, &len) != 0)
+		rb_sys_fail("getpeername");
+
+	if (addr.ss_family == AF_UNIX)
+		return rb_ivar_set(io, iv_kgio_addr, localhost);
+
+	return in_addr_set(io, &addr, len);
 }
 
 /*
@@ -423,6 +443,8 @@ void init_kgio_accept(void)
 	cKgio_Socket = rb_const_get(mKgio, rb_intern("Socket"));
 	cClientSocket = cKgio_Socket;
 	mSocketMethods = rb_const_get(mKgio, rb_intern("SocketMethods"));
+
+	rb_define_method(mSocketMethods, "kgio_addr!", addr_bang, 0);
 
 	rb_define_singleton_method(mKgio, "accept_cloexec?", get_cloexec, 0);
 	rb_define_singleton_method(mKgio, "accept_cloexec=", set_cloexec, 1);
