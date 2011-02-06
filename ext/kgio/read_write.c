@@ -10,6 +10,9 @@ static ID id_set_backtrace;
  */
 #if defined(__linux__) && ! defined(USE_MSG_DONTWAIT)
 #  define USE_MSG_DONTWAIT
+static const int peek_flags = MSG_DONTWAIT|MSG_PEEK;
+#else
+static const int peek_flags = MSG_PEEK;
 #endif
 
 NORETURN(static void raise_empty_bt(VALUE, const char *));
@@ -223,6 +226,72 @@ static VALUE kgio_tryrecv(int argc, VALUE *argv, VALUE io)
 #  define kgio_tryrecv kgio_tryread
 #endif /* USE_MSG_DONTWAIT */
 
+static VALUE my_peek(int io_wait, int argc, VALUE *argv, VALUE io)
+{
+	struct io_args a;
+	long n;
+
+	prepare_read(&a, argc, argv, io);
+	kgio_autopush_recv(io);
+
+	if (a.len > 0) {
+		if (peek_flags == MSG_PEEK)
+			set_nonblocking(a.fd);
+retry:
+		n = (long)recv(a.fd, a.ptr, a.len, peek_flags);
+		if (read_check(&a, n, "recv(MSG_PEEK)", io_wait) != 0)
+			goto retry;
+	}
+	return a.buf;
+}
+
+/*
+ * call-seq:
+ *
+ *	socket.kgio_trypeek(maxlen)           ->  buffer
+ *	socket.kgio_trypeek(maxlen, buffer)   ->  buffer
+ *
+ * Like kgio_tryread, except it uses MSG_PEEK so it does not drain the
+ * socket buffer.  A subsequent read of any type (including another peek)
+ * will return the same data.
+ */
+static VALUE kgio_trypeek(int argc, VALUE *argv, VALUE io)
+{
+	return my_peek(0, argc, argv, io);
+}
+
+/*
+ * call-seq:
+ *
+ *	socket.kgio_peek(maxlen)           ->  buffer
+ *	socket.kgio_peek(maxlen, buffer)   ->  buffer
+ *
+ * Like kgio_read, except it uses MSG_PEEK so it does not drain the
+ * socket buffer.  A subsequent read of any type (including another peek)
+ * will return the same data.
+ */
+static VALUE kgio_peek(int argc, VALUE *argv, VALUE io)
+{
+	return my_peek(1, argc, argv, io);
+}
+
+/*
+ * call-seq:
+ *
+ *	Kgio.trypeek(socket, maxlen)           ->  buffer
+ *	Kgio.trypeek(socket, maxlen, buffer)   ->  buffer
+ *
+ * Like Kgio.tryread, except it uses MSG_PEEK so it does not drain the
+ * socket buffer.  This can only be used on sockets and not pipe objects.
+ * Maybe used in place of SocketMethods#kgio_trypeek for non-Kgio objects
+ */
+static VALUE s_trypeek(int argc, VALUE *argv, VALUE mod)
+{
+	if (argc <= 1)
+		rb_raise(rb_eArgError, "wrong number of arguments");
+	return my_peek(0, argc - 1, &argv[1], argv[0]);
+}
+
 static void prepare_write(struct io_args *a, VALUE io, VALUE str)
 {
 	a->buf = (TYPE(str) == T_STRING) ? str : rb_obj_as_string(str);
@@ -410,6 +479,7 @@ void init_kgio_read_write(void)
 
 	rb_define_singleton_method(mKgio, "tryread", s_tryread, -1);
 	rb_define_singleton_method(mKgio, "trywrite", s_trywrite, 2);
+	rb_define_singleton_method(mKgio, "trypeek", s_trypeek, -1);
 
 	/*
 	 * Document-module: Kgio::PipeMethods
@@ -438,6 +508,8 @@ void init_kgio_read_write(void)
 	rb_define_method(mSocketMethods, "kgio_write", kgio_send, 1);
 	rb_define_method(mSocketMethods, "kgio_tryread", kgio_tryrecv, -1);
 	rb_define_method(mSocketMethods, "kgio_trywrite", kgio_trysend, 1);
+	rb_define_method(mSocketMethods, "kgio_trypeek", kgio_trypeek, -1);
+	rb_define_method(mSocketMethods, "kgio_peek", kgio_peek, -1);
 
 	/*
 	 * Returns the client IPv4 address of the socket in dotted quad
