@@ -2,6 +2,7 @@ require 'mkmf'
 $CPPFLAGS << ' -D_GNU_SOURCE'
 $CPPFLAGS << ' -DPOSIX_C_SOURCE=1'
 
+have_func("poll", "poll.h")
 have_func("getaddrinfo", %w(sys/types.h sys/socket.h netdb.h)) or
   abort "getaddrinfo required"
 have_func("getnameinfo", %w(sys/socket.h netdb.h)) or

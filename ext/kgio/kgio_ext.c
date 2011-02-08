@@ -7,4 +7,5 @@ void Init_kgio_ext(void)
 	init_kgio_connect();
 	init_kgio_accept();
 	init_kgio_autopush();
+	init_kgio_poll();
 }

@@ -35,6 +35,7 @@ void init_kgio_read_write(void);
 void init_kgio_accept(void);
 void init_kgio_connect(void);
 void init_kgio_autopush(void);
+void init_kgio_poll(void);
 
 void kgio_autopush_accept(VALUE, VALUE);
 void kgio_autopush_recv(VALUE);

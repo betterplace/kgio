@@ -12,3 +12,4 @@ ext/kgio/connect.c
 ext/kgio/kgio_ext.c
 ext/kgio/read_write.c
 ext/kgio/wait.c
+ext/kgio/poll.c
