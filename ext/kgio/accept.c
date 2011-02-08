@@ -453,13 +453,26 @@ void init_kgio_accept(void)
 	rb_define_singleton_method(mKgio, "accept_class=", set_accepted, 1);
 	rb_define_singleton_method(mKgio, "accept_class", get_accepted, 0);
 
+	/*
+	 * Document-class: Kgio::UNIXServer
+	 *
+	 * Kgio::UNIXServer should be used in place of the plain UNIXServer
+	 * when kgio_accept and kgio_tryaccept methods are needed.
+	 */
 	cUNIXServer = rb_const_get(rb_cObject, rb_intern("UNIXServer"));
 	cUNIXServer = rb_define_class_under(mKgio, "UNIXServer", cUNIXServer);
 	rb_define_method(cUNIXServer, "kgio_tryaccept", unix_tryaccept, -1);
 	rb_define_method(cUNIXServer, "kgio_accept", unix_accept, -1);
 
+	/*
+	 * Document-class: Kgio::TCPServer
+	 *
+	 * Kgio::TCPServer should be used in place of the plain TCPServer
+	 * when kgio_accept and kgio_tryaccept methods are needed.
+	 */
 	cTCPServer = rb_const_get(rb_cObject, rb_intern("TCPServer"));
 	cTCPServer = rb_define_class_under(mKgio, "TCPServer", cTCPServer);
+
 	rb_define_method(cTCPServer, "kgio_tryaccept", tcp_tryaccept, -1);
 	rb_define_method(cTCPServer, "kgio_accept", tcp_accept, -1);
 	init_sock_for_fd();

@@ -257,12 +257,24 @@ void init_kgio_connect(void)
 	rb_define_singleton_method(cKgio_Socket, "new", kgio_connect, 1);
 	rb_define_singleton_method(cKgio_Socket, "start", kgio_start, 1);
 
+	/*
+	 * Document-class: Kgio::TCPSocket
+	 *
+	 * Kgio::TCPSocket should be used in place of the plain TCPSocket
+	 * when kgio_* methods are needed.
+	 */
 	cTCPSocket = rb_const_get(rb_cObject, rb_intern("TCPSocket"));
 	cTCPSocket = rb_define_class_under(mKgio, "TCPSocket", cTCPSocket);
 	rb_include_module(cTCPSocket, mSocketMethods);
 	rb_define_singleton_method(cTCPSocket, "new", kgio_tcp_connect, 2);
 	rb_define_singleton_method(cTCPSocket, "start", kgio_tcp_start, 2);
 
+	/*
+	 * Document-class: Kgio::UNIXSocket
+	 *
+	 * Kgio::UNIXSocket should be used in place of the plain UNIXSocket
+	 * when kgio_* methods are needed.
+	 */
 	cUNIXSocket = rb_const_get(rb_cObject, rb_intern("UNIXSocket"));
 	cUNIXSocket = rb_define_class_under(mKgio, "UNIXSocket", cUNIXSocket);
 	rb_include_module(cUNIXSocket, mSocketMethods);

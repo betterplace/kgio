@@ -78,11 +78,32 @@ static void state_set(VALUE io, enum autopush_state state)
 static enum autopush_state detect_acceptor_state(VALUE io);
 static void push_pending_data(VALUE io);
 
+/*
+ * call-seq:
+ *	Kgio.autopush? -> true or false
+ *
+ * Returns whether or not autopush is enabled.
+ *
+ * Only available on systems with TCP_CORK (Linux) or
+ * TCP_NOPUSH (FreeBSD, and maybe other *BSDs).
+ */
 static VALUE s_get_autopush(VALUE self)
 {
 	return enabled ? Qtrue : Qfalse;
 }
 
+/*
+ * call-seq:
+ *	Kgio.autopush = true
+ *	Kgio.autopush = false
+ *
+ * Enables or disables autopush for sockets created with kgio_accept
+ * and kgio_tryaccept methods.  Autopush relies on TCP_CORK/TCP_NOPUSH
+ * being enabled on the listen socket.
+ *
+ * Only available on systems with TCP_CORK (Linux) or
+ * TCP_NOPUSH (FreeBSD, and maybe other *BSDs).
+ */
 static VALUE s_set_autopush(VALUE self, VALUE val)
 {
 	enabled = RTEST(val);
@@ -90,11 +111,35 @@ static VALUE s_set_autopush(VALUE self, VALUE val)
 	return val;
 }
 
+/*
+ * call-seq:
+ *
+ *	io.kgio_autopush?  -> true or false
+ *
+ * Returns the current autopush state of the Kgio::SocketMethods-enabled
+ * socket.
+ *
+ * Only available on systems with TCP_CORK (Linux) or
+ * TCP_NOPUSH (FreeBSD, and maybe other *BSDs).
+ */
 static VALUE autopush_get(VALUE io)
 {
 	return state_get(io) <= 0 ? Qfalse : Qtrue;
 }
 
+/*
+ * call-seq:
+ *
+ *	io.kgio_autopush = true
+ *	io.kgio_autopush = false
+ *
+ * Enables or disables autopush on any given Kgio::SocketMethods-capable
+ * IO object.  This does NOT enable or disable TCP_NOPUSH/TCP_CORK right
+ * away, that must be done with IO.setsockopt
+ *
+ * Only available on systems with TCP_CORK (Linux) or
+ * TCP_NOPUSH (FreeBSD, and maybe other *BSDs).
+ */
 static VALUE autopush_set(VALUE io, VALUE vbool)
 {
 	int fd = my_fileno(io);

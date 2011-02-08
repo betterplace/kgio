@@ -1,5 +1,7 @@
 # -*- encoding: binary -*-
 require 'socket'
+
+# See the {README}[link:index.html]
 module Kgio
 
   # The IPv4 address of UNIX domain sockets, useful for creating
