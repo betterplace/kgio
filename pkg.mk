@@ -7,7 +7,7 @@ GIT-VERSION-FILE: .FORCE-GIT-VERSION-FILE
 	@./GIT-VERSION-GEN
 -include GIT-VERSION-FILE
 -include local.mk
-DLEXT := $(shell $(RUBY) -rrbconfig -e 'puts Config::CONFIG["DLEXT"]')
+DLEXT := $(shell $(RUBY) -rrbconfig -e 'puts RbConfig::CONFIG["DLEXT"]')
 RUBY_VERSION := $(shell $(RUBY) -e 'puts RUBY_VERSION')
 RUBY_ENGINE := $(shell $(RUBY) -e 'puts((RUBY_ENGINE rescue "ruby"))')
 lib := lib
@@ -44,24 +44,27 @@ $(ext_dl): $(ext_src) $(ext_pfx_src) $(ext_pfx)/$(ext)/Makefile
 	$(MAKE) -C $(@D)
 lib := $(lib):$(ext_pfx)/$(ext)
 build: $(ext_dl)
+else
+build:
 endif
 
-pkg_extra := GIT-VERSION-FILE NEWS ChangeLog LATEST
+pkg_extra += GIT-VERSION-FILE NEWS ChangeLog LATEST
 ChangeLog: GIT-VERSION-FILE .wrongdoc.yml
 	$(WRONGDOC) prepare
+NEWS LATEST: ChangeLog
 
 manifest:
 	$(RM) .manifest
 	$(MAKE) .manifest
 
-.manifest: ChangeLog
+.manifest: $(pkg_extra)
 	(git ls-files && for i in $@ $(pkg_extra); do echo $$i; done) | \
 		LC_ALL=C sort > $@+
 	cmp $@+ $@ || mv $@+ $@
 	$(RM) $@+
 
-doc:: .document .wrongdoc.yml
-	find lib -type f -name '*.rbc' -exec rm -f '{}' ';'
+doc:: .document .wrongdoc.yml $(pkg_extra)
+	-find lib -type f -name '*.rbc' -exec rm -f '{}' ';'
 	-find ext -type f -name '*.rbc' -exec rm -f '{}' ';'
 	$(RM) -r doc
 	$(WRONGDOC) all
@@ -144,7 +147,7 @@ test_units := $(wildcard test/test_*.rb)
 test: test-unit
 test-unit: $(test_units)
 $(test_units): build
-	$(RUBY) -I $(lib) $@
+	$(RUBY) -I $(lib) $@ $(RUBY_TEST_OPTS)
 
 # this requires GNU coreutils variants
 ifneq ($(RSYNC_DEST),)
