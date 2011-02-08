@@ -248,7 +248,7 @@ static VALUE addr_bang(VALUE io)
  * An optional class argument may be specified to override the
  * Kgio::Socket-class return value:
  *
- *      server.kgio_accept(MySocket) -> MySocket
+ *      server.kgio_tryaccept(MySocket) -> MySocket
  */
 static VALUE tcp_tryaccept(int argc, VALUE *argv, VALUE io)
 {
