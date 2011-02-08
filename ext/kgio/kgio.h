@@ -43,5 +43,8 @@ void kgio_autopush_send(VALUE);
 
 VALUE kgio_call_wait_writable(VALUE io);
 VALUE kgio_call_wait_readable(VALUE io);
+#if defined(HAVE_RB_THREAD_BLOCKING_REGION) && defined(HAVE_POLL)
+#  define USE_KGIO_POLL
+#endif /* USE_KGIO_POLL */
 
 #endif /* KGIO_H */

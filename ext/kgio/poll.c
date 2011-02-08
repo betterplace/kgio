@@ -1,5 +1,5 @@
 #include "kgio.h"
-#if defined(HAVE_RB_THREAD_BLOCKING_REGION) && defined(HAVE_POLL)
+#if defined(USE_KGIO_POLL)
 #include <poll.h>
 #ifdef HAVE_RUBY_ST_H
 #  include <ruby/st.h>
@@ -179,8 +179,8 @@ void init_kgio_poll(void)
 	c(POLLHUP);
 	c(POLLNVAL);
 }
-#else /* ! HAVE_RB_THREAD_BLOCKING_REGION */
+#else /* ! USE_KGIO_POLL */
 void init_kgio_poll(void)
 {
 }
-#endif /* ! HAVE_RB_THREAD_BLOCKIONG_REGION */
+#endif /* ! USE_KGIO_POLL */
