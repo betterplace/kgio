@@ -33,7 +33,7 @@ applications.
 The library consists of a C extension so you'll need a C compiler
 and Ruby development libraries/headers.
 
-You may download the tarball from the Mongrel project page on Rubyforge
+You may download the tarball from the Rainbows! project page on Rubyforge
 and run setup.rb after unpacking it:
 
 http://rubyforge.org/frs/?group_id=8977
