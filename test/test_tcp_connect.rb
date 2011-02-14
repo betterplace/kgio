@@ -44,6 +44,8 @@ class TestKgioTcpConnect < Test::Unit::TestCase
   def test_tcp_socket_new_invalid
     assert_raises(ArgumentError) { Kgio::TCPSocket.new('example.com', 80) }
     assert_raises(ArgumentError) { Kgio::TCPSocket.new('999.999.999.999', 80) }
+    assert_raises(TypeError) { Kgio::TCPSocket.new("127.0.0.1", "http") }
+    assert_raises(TypeError) { Kgio::TCPSocket.new('example.com', "http") }
   end
 
   def test_tcp_socket_new

@@ -73,7 +73,7 @@ static VALUE tcp_connect(VALUE klass, VALUE ip, VALUE port, int io_wait)
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_protocol = IPPROTO_TCP;
 	/* disallow non-deterministic DNS lookups */
-	hints.ai_flags = AI_NUMERICHOST | AI_NUMERICSERV;
+	hints.ai_flags = AI_NUMERICHOST;
 
 	rc = getaddrinfo(ipname, ipport, &hints, &res);
 	if (rc != 0)
