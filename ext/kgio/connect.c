@@ -98,7 +98,8 @@ static VALUE tcp_connect(VALUE klass, VALUE ip, VALUE port, int io_wait)
  * Creates a new Kgio::TCPSocket object and initiates a
  * non-blocking connection.
  *
- * This may block and call any method defined to kgio_wait_writable.
+ * This may block and call any method defined to +kgio_wait_writable+
+ * for the class.
  *
  * Unlike the TCPSocket.new in Ruby, this does NOT perform DNS
  * lookups (which is subject to a different set of timeouts and
@@ -155,7 +156,8 @@ static VALUE unix_connect(VALUE klass, VALUE path, int io_wait)
  * Creates a new Kgio::UNIXSocket object and initiates a
  * non-blocking connection.
  *
- * This may block and call any method defined to kgio_wait_writable.
+ * This may block and call any method defined to +kgio_wait_writable+
+ * for the class.
  */
 static VALUE kgio_unix_connect(VALUE klass, VALUE path)
 {
@@ -212,7 +214,8 @@ static VALUE stream_connect(VALUE klass, VALUE addr, int io_wait)
  * Creates a generic Kgio::Socket object and initiates a
  * non-blocking connection.
  *
- * This may block and call any method assigned to kgio_wait_writable.
+ * This may block and call any method defined to +kgio_wait_writable+
+ * for the class.
  */
 static VALUE kgio_connect(VALUE klass, VALUE addr)
 {

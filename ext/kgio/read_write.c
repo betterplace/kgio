@@ -126,7 +126,7 @@ retry:
  * Reads at most maxlen bytes from the stream socket.  Returns with a
  * newly allocated buffer, or may reuse an existing buffer if supplied.
  *
- * Calls whatever is is defined to be the kgio_wait_readable method
+ * This may block and call any method defined to +kgio_wait_readable+
  * for the class.
  *
  * Returns nil on EOF.
@@ -359,7 +359,7 @@ retry:
  *
  * Returns nil when the write completes.
  *
- * Calls whatever is is defined to be the kgio_wait_writable method
+ * This may block and call any method defined to +kgio_wait_writable+
  * for the class.
  */
 static VALUE kgio_write(VALUE io, VALUE str)
