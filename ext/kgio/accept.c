@@ -69,6 +69,7 @@ static VALUE xaccept(void *ptr)
 
 #ifdef HAVE_RB_THREAD_BLOCKING_REGION
 #  include <time.h>
+#  include "blocking_io_region.h"
 /*
  * Try to use a (real) blocking accept() since that can prevent
  * thundering herds under Linux:
@@ -82,7 +83,7 @@ static int thread_accept(struct accept_args *a, int force_nonblock)
 {
 	if (force_nonblock)
 		set_nonblocking(a->fd);
-	return (int)rb_thread_blocking_region(xaccept, a, RUBY_UBF_IO, 0);
+	return (int)rb_thread_io_blocking_region(xaccept, a, a->fd);
 }
 
 static void set_blocking_or_block(int fd)
