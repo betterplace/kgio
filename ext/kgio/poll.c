@@ -62,7 +62,7 @@ static int io_to_pollfd_i(VALUE key, VALUE value, VALUE args)
 
 static void hash2pollfds(struct poll_args *a)
 {
-	a->fds = xmalloc(sizeof(struct poll_args) * RHASH_SIZE(a->ios));
+	a->fds = xmalloc(sizeof(struct pollfd) * RHASH_SIZE(a->ios));
 	a->fd_to_io = st_init_numtable();
 	rb_hash_foreach(a->ios, io_to_pollfd_i, (VALUE)a);
 }
