@@ -2,10 +2,8 @@
 
 === Documentation
 
-We use RDoc 2.5.x with Darkfish for documentation as much as possible,
-if you're on Ruby 1.8 you want to install the latest "rdoc" gem.  Due to
-the lack of RDoc-to-manpage converters we know about, we're writing
-manpages in Markdown and converting to troff/HTML with Pandoc.
+We use the latest version of {wrongdoc}[http://bogomips.org/wrongdoc] as
+much as possible.
 
 Please wrap documentation at 72 characters-per-line or less (long URLs
 are exempt) so it is comfortably readable from terminals.
@@ -22,7 +20,7 @@ respective C APIs.
 All of our C code should be compatible with all reasonably modern Unices
 and should run on compilers supported by the versions of Ruby we target.
 
-We will NEVER support non-Free platforms under any circumstances.
+We will NEVER directly support non-Free platforms under any circumstances.
 
 Our C code follows K&R indentation style (hard tabs, tabs are always 8
 characters wide) and NOT the indentation style of Matz Ruby.
@@ -63,4 +61,3 @@ Without RubyGems (via setup.rb):
 
 It is not at all recommended to mix a RubyGems installation with an
 installation done without RubyGems, however.
-
