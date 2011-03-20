@@ -16,6 +16,7 @@ static int accept4_flags = SOCK_CLOEXEC | SOCK_NONBLOCK;
 
 struct accept_args {
 	int fd;
+	int flags;
 	struct sockaddr *addr;
 	socklen_t *addrlen;
 };
@@ -58,10 +59,10 @@ static VALUE xaccept(void *ptr)
 	struct accept_args *a = ptr;
 	int rv;
 
-	rv = accept_fn(a->fd, a->addr, a->addrlen, accept4_flags);
+	rv = accept_fn(a->fd, a->addr, a->addrlen, a->flags);
 	if (rv == -1 && errno == ENOSYS && accept_fn != my_accept4) {
 		accept_fn = my_accept4;
-		rv = accept_fn(a->fd, a->addr, a->addrlen, accept4_flags);
+		rv = accept_fn(a->fd, a->addr, a->addrlen, a->flags);
 	}
 
 	return (VALUE)rv;
@@ -151,6 +152,7 @@ my_accept(VALUE accept_io, VALUE klass,
 	a.fd = my_fileno(accept_io);
 	a.addr = addr;
 	a.addrlen = addrlen;
+	a.flags = accept4_flags;
 retry:
 	client = thread_accept(&a, nonblock);
 	if (client == -1) {
