@@ -19,6 +19,8 @@ struct accept_args {
 	int flags;
 	struct sockaddr *addr;
 	socklen_t *addrlen;
+	VALUE accept_io;
+	VALUE accepted_class;
 };
 
 /*
@@ -54,6 +56,10 @@ static VALUE get_accepted(VALUE klass)
 	return cClientSocket;
 }
 
+/*
+ * accept() wrapper that'll fall back on accept() if we were built on
+ * a system with accept4() but run on a system without accept4()
+ */
 static VALUE xaccept(void *ptr)
 {
 	struct accept_args *a = ptr;
@@ -125,69 +131,28 @@ static int thread_accept(struct accept_args *a, int force_nonblock)
 #define set_blocking_or_block(fd) (void)rb_io_wait_readable(fd)
 #endif /* ! HAVE_RB_THREAD_BLOCKING_REGION */
 
-static VALUE acceptor(int argc, const VALUE *argv)
+static void
+prepare_accept(struct accept_args *a, VALUE self, int argc, const VALUE *argv)
 {
-	if (argc == 0)
-		return cClientSocket; /* default, legacy behavior */
-	else if (argc == 1)
-		return argv[0];
+	a->fd = my_fileno(self);
+	a->accept_io = self;
+
+	switch (argc) {
+	case 2:
+		a->flags = NUM2INT(argv[1]);
+		a->accepted_class = NIL_P(argv[0]) ? cClientSocket : argv[0];
+		return;
+	case 0: /* default, legacy behavior */
+		a->flags = accept4_flags;
+		a->accepted_class = cClientSocket;
+		return;
+	case 1:
+		a->flags = accept4_flags;
+		a->accepted_class = NIL_P(argv[0]) ? cClientSocket : argv[0];
+		return;
+	}
 
 	rb_raise(rb_eArgError, "wrong number of arguments (%d for 1)", argc);
-}
-
-#if defined(__linux__)
-#  define post_accept kgio_autopush_accept
-#else
-#  define post_accept(a,b) for(;0;)
-#endif
-
-static VALUE
-my_accept(VALUE accept_io, VALUE klass,
-          struct sockaddr *addr, socklen_t *addrlen, int nonblock)
-{
-	int client;
-	VALUE client_io;
-	struct accept_args a;
-
-	a.fd = my_fileno(accept_io);
-	a.addr = addr;
-	a.addrlen = addrlen;
-	a.flags = accept4_flags;
-retry:
-	client = thread_accept(&a, nonblock);
-	if (client == -1) {
-		switch (errno) {
-		case EAGAIN:
-			if (nonblock)
-				return Qnil;
-			set_blocking_or_block(a.fd);
-#ifdef ECONNABORTED
-		case ECONNABORTED:
-#endif /* ECONNABORTED */
-#ifdef EPROTO
-		case EPROTO:
-#endif /* EPROTO */
-		case EINTR:
-			goto retry;
-		case ENOMEM:
-		case EMFILE:
-		case ENFILE:
-#ifdef ENOBUFS
-		case ENOBUFS:
-#endif /* ENOBUFS */
-			errno = 0;
-			rb_gc();
-			client = thread_accept(&a, nonblock);
-		}
-		if (client == -1) {
-			if (errno == EINTR)
-				goto retry;
-			rb_sys_fail("accept");
-		}
-	}
-	client_io = sock_for_fd(klass, client);
-	post_accept(accept_io, client_io);
-	return client_io;
 }
 
 static VALUE in_addr_set(VALUE io, struct sockaddr_storage *addr, socklen_t len)
@@ -214,6 +179,61 @@ static VALUE in_addr_set(VALUE io, struct sockaddr_storage *addr, socklen_t len)
 		rb_raise(rb_eRuntimeError, "getnameinfo: %s", gai_strerror(rc));
 	rb_str_set_len(host, strlen(host_ptr));
 	return rb_ivar_set(io, iv_kgio_addr, host);
+}
+
+#if defined(__linux__)
+#  define post_accept kgio_autopush_accept
+#else
+#  define post_accept(a,b) for(;0;)
+#endif
+
+static VALUE
+my_accept(struct accept_args *a, int force_nonblock)
+{
+	int client_fd;
+	VALUE client_io;
+
+retry:
+	client_fd = thread_accept(a, force_nonblock);
+	if (client_fd == -1) {
+		switch (errno) {
+		case EAGAIN:
+			if (force_nonblock)
+				return Qnil;
+			set_blocking_or_block(a->fd);
+#ifdef ECONNABORTED
+		case ECONNABORTED:
+#endif /* ECONNABORTED */
+#ifdef EPROTO
+		case EPROTO:
+#endif /* EPROTO */
+		case EINTR:
+			goto retry;
+		case ENOMEM:
+		case EMFILE:
+		case ENFILE:
+#ifdef ENOBUFS
+		case ENOBUFS:
+#endif /* ENOBUFS */
+			errno = 0;
+			rb_gc();
+			client_fd = thread_accept(a, force_nonblock);
+		}
+		if (client_fd == -1) {
+			if (errno == EINTR)
+				goto retry;
+			rb_sys_fail("accept");
+		}
+	}
+	client_io = sock_for_fd(a->accepted_class, client_fd);
+	post_accept(a->accept_io, client_io);
+
+	if (a->addr)
+		in_addr_set(client_io,
+		            (struct sockaddr_storage *)a->addr, *a->addrlen);
+	else
+		rb_ivar_set(client_io, iv_kgio_addr, localhost);
+	return client_io;
 }
 
 /*
@@ -253,16 +273,16 @@ static VALUE addr_bang(VALUE io)
  *
  *      server.kgio_tryaccept(MySocket) -> MySocket
  */
-static VALUE tcp_tryaccept(int argc, VALUE *argv, VALUE io)
+static VALUE tcp_tryaccept(int argc, VALUE *argv, VALUE self)
 {
 	struct sockaddr_storage addr;
 	socklen_t addrlen = sizeof(struct sockaddr_storage);
-	VALUE klass = acceptor(argc, argv);
-	VALUE rv = my_accept(io, klass, (struct sockaddr *)&addr, &addrlen, 1);
+	struct accept_args a;
 
-	if (!NIL_P(rv))
-		in_addr_set(rv, &addr, addrlen);
-	return rv;
+	a.addr = (struct sockaddr *)&addr;
+	a.addrlen = &addrlen;
+	prepare_accept(&a, self, argc, argv);
+	return my_accept(&a, 1);
 }
 
 /*
@@ -283,15 +303,16 @@ static VALUE tcp_tryaccept(int argc, VALUE *argv, VALUE io)
  *
  *      server.kgio_accept(MySocket) -> MySocket
  */
-static VALUE tcp_accept(int argc, VALUE *argv, VALUE io)
+static VALUE tcp_accept(int argc, VALUE *argv, VALUE self)
 {
 	struct sockaddr_storage addr;
 	socklen_t addrlen = sizeof(struct sockaddr_storage);
-	VALUE klass = acceptor(argc, argv);
-	VALUE rv = my_accept(io, klass, (struct sockaddr *)&addr, &addrlen, 0);
+	struct accept_args a;
 
-	in_addr_set(rv, &addr, addrlen);
-	return rv;
+	a.addr = (struct sockaddr *)&addr;
+	a.addrlen = &addrlen;
+	prepare_accept(&a, self, argc, argv);
+	return my_accept(&a, 0);
 }
 
 /*
@@ -311,14 +332,14 @@ static VALUE tcp_accept(int argc, VALUE *argv, VALUE io)
  *
  *      server.kgio_tryaccept(MySocket) -> MySocket
  */
-static VALUE unix_tryaccept(int argc, VALUE *argv, VALUE io)
+static VALUE unix_tryaccept(int argc, VALUE *argv, VALUE self)
 {
-	VALUE klass = acceptor(argc, argv);
-	VALUE rv = my_accept(io, klass, NULL, NULL, 1);
+	struct accept_args a;
 
-	if (!NIL_P(rv))
-		rb_ivar_set(rv, iv_kgio_addr, localhost);
-	return rv;
+	a.addr = NULL;
+	a.addrlen = NULL;
+	prepare_accept(&a, self, argc, argv);
+	return my_accept(&a, 1);
 }
 
 /*
@@ -339,13 +360,14 @@ static VALUE unix_tryaccept(int argc, VALUE *argv, VALUE io)
  *
  *      server.kgio_accept(MySocket) -> MySocket
  */
-static VALUE unix_accept(int argc, VALUE *argv, VALUE io)
+static VALUE unix_accept(int argc, VALUE *argv, VALUE self)
 {
-	VALUE klass = acceptor(argc, argv);
-	VALUE rv = my_accept(io, klass, NULL, NULL, 0);
+	struct accept_args a;
 
-	rb_ivar_set(rv, iv_kgio_addr, localhost);
-	return rv;
+	a.addr = NULL;
+	a.addrlen = NULL;
+	prepare_accept(&a, self, argc, argv);
+	return my_accept(&a, 0);
 }
 
 /*
@@ -386,7 +408,7 @@ static VALUE get_nonblock(VALUE mod)
  * TCPServer#kgio_tryaccept,
  * UNIXServer#kgio_accept,
  * and UNIXServer#kgio_tryaccept
- * are created with the FD_CLOEXEC file descriptor flag.
+ * default to being created with the FD_CLOEXEC file descriptor flag.
  *
  * This is on by default, as there is little reason to deal to enable
  * it for client sockets on a socket server.

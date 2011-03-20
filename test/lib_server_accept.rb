@@ -1,4 +1,5 @@
 require 'test/unit'
+require 'fcntl'
 require 'io/nonblock'
 $-w = true
 require 'kgio'
@@ -17,6 +18,24 @@ module LibServerAccept
     b = @srv.kgio_tryaccept
     assert_kind_of Kgio::Socket, b
     assert_equal @host, b.kgio_addr
+  end
+
+  def test_tryaccept_flags
+    a = client_connect
+    IO.select([@srv])
+    b = @srv.kgio_tryaccept nil, 0
+    assert_kind_of Kgio::Socket, b
+    assert_equal false, b.nonblock?
+    assert_equal 0, b.fcntl(Fcntl::F_GETFD)
+  end
+
+  def test_blocking_accept_flags
+    a = client_connect
+    IO.select([@srv])
+    b = @srv.kgio_accept nil, 0
+    assert_kind_of Kgio::Socket, b
+    assert_equal false, b.nonblock?
+    assert_equal 0, b.fcntl(Fcntl::F_GETFD)
   end
 
   def test_tryaccept_fail
