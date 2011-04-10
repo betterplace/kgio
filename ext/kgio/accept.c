@@ -192,6 +192,7 @@ my_accept(struct accept_args *a, int force_nonblock)
 {
 	int client_fd;
 	VALUE client_io;
+	int retried = 0;
 
 retry:
 	client_fd = thread_accept(a, force_nonblock);
@@ -200,6 +201,7 @@ retry:
 		case EAGAIN:
 			if (force_nonblock)
 				return Qnil;
+			a->fd = my_fileno(a->accept_io);
 			set_blocking_or_block(a->fd);
 #ifdef ECONNABORTED
 		case ECONNABORTED:
@@ -208,6 +210,7 @@ retry:
 		case EPROTO:
 #endif /* EPROTO */
 		case EINTR:
+			a->fd = my_fileno(a->accept_io);
 			goto retry;
 		case ENOMEM:
 		case EMFILE:
@@ -215,13 +218,13 @@ retry:
 #ifdef ENOBUFS
 		case ENOBUFS:
 #endif /* ENOBUFS */
-			errno = 0;
-			rb_gc();
-			client_fd = thread_accept(a, force_nonblock);
-		}
-		if (client_fd == -1) {
-			if (errno == EINTR)
+			if (!retried) {
+				retried = 1;
+				errno = 0;
+				rb_gc();
 				goto retry;
+			}
+		default:
 			rb_sys_fail("accept");
 		}
 	}
