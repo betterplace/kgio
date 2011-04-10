@@ -76,8 +76,10 @@ static void prepare_read(struct io_args *a, int argc, VALUE *argv, VALUE io)
 static int read_check(struct io_args *a, long n, const char *msg, int io_wait)
 {
 	if (n == -1) {
-		if (errno == EINTR)
+		if (errno == EINTR) {
+			a->fd = my_fileno(a->io);
 			return -1;
+		}
 		rb_str_set_len(a->buf, 0);
 		if (errno == EAGAIN) {
 			if (io_wait) {
@@ -307,8 +309,10 @@ static int write_check(struct io_args *a, long n, const char *msg, int io_wait)
 done:
 		a->buf = Qnil;
 	} else if (n == -1) {
-		if (errno == EINTR)
+		if (errno == EINTR) {
+			a->fd = my_fileno(a->io);
 			return -1;
+		}
 		if (errno == EAGAIN) {
 			long written = RSTRING_LEN(a->buf) - a->len;
 
