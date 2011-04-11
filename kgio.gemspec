@@ -20,7 +20,7 @@ Gem::Specification.new do |s|
   s.test_files = Dir['test/test_*.rb']
   s.extensions = %w(ext/kgio/extconf.rb)
 
-  s.add_development_dependency('wrongdoc', '~> 1.4')
+  s.add_development_dependency('wrongdoc', '~> 1.5')
   s.add_development_dependency('strace_me', '~> 1.0')
 
   # s.license = %w(LGPL) # disabled for compatibility with older RubyGems
