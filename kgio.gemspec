@@ -15,7 +15,6 @@ Gem::Specification.new do |s|
   s.extra_rdoc_files = extra_rdoc_files(manifest)
   s.files = manifest
   s.rdoc_options = rdoc_options
-  s.require_paths = %w(lib ext)
   s.rubyforge_project = %q{rainbows}
   s.summary = summary
   s.test_files = Dir['test/test_*.rb']
