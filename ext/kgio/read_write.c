@@ -374,7 +374,7 @@ static VALUE kgio_write(VALUE io, VALUE str)
 /*
  * call-seq:
  *
- *	io.kgio_trywrite(str)	-> nil or :wait_writable
+ *	io.kgio_trywrite(str)	-> nil, String or :wait_writable
  *
  * Returns nil if the write was completed in full.
  *
@@ -455,7 +455,7 @@ static VALUE s_tryread(int argc, VALUE *argv, VALUE mod)
 /*
  * call-seq:
  *
- *	Kgio.trywrite(io, str)    -> nil or :wait_writable
+ *	Kgio.trywrite(io, str)    -> nil, String or :wait_writable
  *
  * Returns nil if the write was completed in full.
  *
