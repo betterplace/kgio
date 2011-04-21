@@ -94,7 +94,7 @@ class TestAutopush < Test::Unit::TestCase
     @rd.kgio_write "HI\n"
     @wr.kgio_read(3, rbuf)
     diff = Time.now - t0
-    assert_in_delta(diff, 0.200, 0.01, "nopush broken? diff=#{diff} > 200ms")
+    assert(diff >= 0.190, "nopush broken? diff=#{diff} > 200ms")
     assert_equal "HI\n", rbuf
   end
 
