@@ -264,6 +264,8 @@ static VALUE addr_bang(VALUE io)
  *
  *	server = Kgio::TCPServer.new('0.0.0.0', 80)
  *	server.kgio_tryaccept -> Kgio::Socket or nil
+ *	server.kgio_tryaccept(klass = MySocket) -> MySocket or nil
+ *	server.kgio_tryaccept(nil, flags) -> Kgio::Socket or nil
  *
  * Initiates a non-blocking accept and returns a generic Kgio::Socket
  * object with the kgio_addr attribute set to the IP address of the
@@ -271,10 +273,15 @@ static VALUE addr_bang(VALUE io)
  *
  * Returns nil on EAGAIN, and raises on other errors.
  *
- * An optional class argument may be specified to override the
- * Kgio::Socket-class return value:
+ * An optional +klass+ argument may be specified to override the
+ * Kgio::Socket-class on a successful return value.
  *
- *      server.kgio_tryaccept(MySocket) -> MySocket
+ * An optional +flags+ argument may also be specifed to override the
+ * value of +Kgio.accept_cloexec+ and +Kgio.accept_nonblock+.  +flags+
+ * is a bitmask that may contain any combination of:
+ *
+ * - Fcntl::FD_CLOEXEC - close-on-exec flag
+ * - IO::NONBLOCK - non-blocking flag
  */
 static VALUE tcp_tryaccept(int argc, VALUE *argv, VALUE self)
 {
@@ -293,6 +300,8 @@ static VALUE tcp_tryaccept(int argc, VALUE *argv, VALUE self)
  *
  *	server = Kgio::TCPServer.new('0.0.0.0', 80)
  *	server.kgio_accept -> Kgio::Socket or nil
+ *	server.kgio_tryaccept -> Kgio::Socket or nil
+ *	server.kgio_tryaccept(klass = MySocket) -> MySocket or nil
  *
  * Initiates a blocking accept and returns a generic Kgio::Socket
  * object with the kgio_addr attribute set to the IP address of
@@ -301,10 +310,15 @@ static VALUE tcp_tryaccept(int argc, VALUE *argv, VALUE self)
  * On Ruby implementations using native threads, this can use a blocking
  * accept(2) (or accept4(2)) system call to avoid thundering herds.
  *
- * An optional class argument may be specified to override the
- * Kgio::Socket-class return value:
+ * An optional +klass+ argument may be specified to override the
+ * Kgio::Socket-class on a successful return value.
  *
- *      server.kgio_accept(MySocket) -> MySocket
+ * An optional +flags+ argument may also be specifed to override the
+ * value of +Kgio.accept_cloexec+ and +Kgio.accept_nonblock+.  +flags+
+ * is a bitmask that may contain any combination of:
+ *
+ * - Fcntl::FD_CLOEXEC - close-on-exec flag
+ * - IO::NONBLOCK - non-blocking flag
  */
 static VALUE tcp_accept(int argc, VALUE *argv, VALUE self)
 {
@@ -323,17 +337,22 @@ static VALUE tcp_accept(int argc, VALUE *argv, VALUE self)
  *
  *	server = Kgio::UNIXServer.new("/path/to/unix/socket")
  *	server.kgio_tryaccept -> Kgio::Socket or nil
+ *	server.kgio_tryaccept(klass = MySocket) -> MySocket or nil
+ *	server.kgio_tryaccept(nil, flags) -> Kgio::Socket or nil
  *
  * Initiates a non-blocking accept and returns a generic Kgio::Socket
  * object with the kgio_addr attribute set (to the value of
  * Kgio::LOCALHOST) on success.
  *
- * Returns nil on EAGAIN, and raises on other errors.
+ * An optional +klass+ argument may be specified to override the
+ * Kgio::Socket-class on a successful return value.
  *
- * An optional class argument may be specified to override the
- * Kgio::Socket-class return value:
+ * An optional +flags+ argument may also be specifed to override the
+ * value of +Kgio.accept_cloexec+ and +Kgio.accept_nonblock+.  +flags+
+ * is a bitmask that may contain any combination of:
  *
- *      server.kgio_tryaccept(MySocket) -> MySocket
+ * - Fcntl::FD_CLOEXEC - close-on-exec flag
+ * - IO::NONBLOCK - non-blocking flag
  */
 static VALUE unix_tryaccept(int argc, VALUE *argv, VALUE self)
 {
@@ -350,6 +369,8 @@ static VALUE unix_tryaccept(int argc, VALUE *argv, VALUE self)
  *
  *	server = Kgio::UNIXServer.new("/path/to/unix/socket")
  *	server.kgio_accept -> Kgio::Socket or nil
+ *	server.kgio_accept(klass = MySocket) -> MySocket or nil
+ *	server.kgio_accept(nil, flags) -> Kgio::Socket or nil
  *
  * Initiates a blocking accept and returns a generic Kgio::Socket
  * object with the kgio_addr attribute set (to the value of
@@ -358,10 +379,15 @@ static VALUE unix_tryaccept(int argc, VALUE *argv, VALUE self)
  * On Ruby implementations using native threads, this can use a blocking
  * accept(2) (or accept4(2)) system call to avoid thundering herds.
  *
- * An optional class argument may be specified to override the
- * Kgio::Socket-class return value:
+ * An optional +klass+ argument may be specified to override the
+ * Kgio::Socket-class on a successful return value.
  *
- *      server.kgio_accept(MySocket) -> MySocket
+ * An optional +flags+ argument may also be specifed to override the
+ * value of +Kgio.accept_cloexec+ and +Kgio.accept_nonblock+.  +flags+
+ * is a bitmask that may contain any combination of:
+ *
+ * - Fcntl::FD_CLOEXEC - close-on-exec flag
+ * - IO::NONBLOCK - non-blocking flag
  */
 static VALUE unix_accept(int argc, VALUE *argv, VALUE self)
 {
