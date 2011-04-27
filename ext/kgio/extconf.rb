@@ -30,5 +30,4 @@ have_func('rb_thread_blocking_region')
 have_func('rb_thread_io_blocking_region')
 have_func('rb_str_set_len')
 
-dir_config('kgio')
 create_makefile('kgio_ext')
