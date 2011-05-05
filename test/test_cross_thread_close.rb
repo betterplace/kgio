@@ -23,4 +23,4 @@ class TestCrossThreadClose < Test::Unit::TestCase
     thr.join
     assert_kind_of IOError, thr.value
   end
-end
+end if defined?(RUBY_ENGINE) && RUBY_ENGINE == "ruby"
