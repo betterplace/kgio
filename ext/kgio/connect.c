@@ -69,6 +69,7 @@ static VALUE tcp_connect(VALUE klass, VALUE ip, VALUE port, int io_wait)
 	rc = snprintf(ipport, sizeof(ipport), "%u", uport);
 	if (rc >= (int)sizeof(ipport) || rc <= 0)
 		rb_raise(rb_eArgError, "invalid TCP port: %u", uport);
+	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_protocol = IPPROTO_TCP;
