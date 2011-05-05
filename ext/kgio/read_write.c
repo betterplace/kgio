@@ -68,6 +68,7 @@ static void prepare_read(struct io_args *a, int argc, VALUE *argv, VALUE io)
 		a->buf = rb_str_new(NULL, a->len);
 	} else {
 		StringValue(a->buf);
+		rb_str_modify(a->buf);
 		rb_str_resize(a->buf, a->len);
 	}
 	a->ptr = RSTRING_PTR(a->buf);
@@ -86,6 +87,7 @@ static int read_check(struct io_args *a, long n, const char *msg, int io_wait)
 				(void)kgio_call_wait_readable(a->io);
 
 				/* buf may be modified in other thread/fiber */
+				rb_str_modify(a->buf);
 				rb_str_resize(a->buf, a->len);
 				a->ptr = RSTRING_PTR(a->buf);
 				return -1;

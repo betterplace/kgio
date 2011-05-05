@@ -30,11 +30,47 @@ module LibReadWriteTest
     assert_equal "", buf
   end
 
+  def test_read_shared
+    a = "." * 0x1000
+    b = a.dup
+    @wr.syswrite "a"
+    assert_equal "a", @rd.kgio_read(0x1000, a)
+    assert_equal "a", a
+    assert_equal "." * 0x1000, b
+  end
+
+  def test_read_shared_2
+    a = "." * 0x1000
+    b = a.dup
+    @wr.syswrite "a"
+    assert_equal "a", @rd.kgio_read(0x1000, b)
+    assert_equal "a", b
+    assert_equal "." * 0x1000, a
+  end
+
   def test_tryread_zero
     assert_equal "", @rd.kgio_tryread(0)
     buf = "foo"
     assert_equal buf.object_id, @rd.kgio_tryread(0, buf).object_id
     assert_equal "", buf
+  end
+
+  def test_tryread_shared
+    a = "." * 0x1000
+    b = a.dup
+    @wr.syswrite("a")
+    assert_equal "a", @rd.kgio_tryread(0x1000, b)
+    assert_equal "a", b
+    assert_equal "." * 0x1000, a
+  end
+
+  def test_tryread_shared_2
+    a = "." * 0x1000
+    b = a.dup
+    @wr.syswrite("a")
+    assert_equal "a", @rd.kgio_tryread(0x1000, a)
+    assert_equal "a", a
+    assert_equal "." * 0x1000, b
   end
 
   def test_read_eof
