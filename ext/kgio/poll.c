@@ -100,6 +100,7 @@ static int io_to_pollfd_i(VALUE key, VALUE value, VALUE args)
 
 static void hash2pollfds(struct poll_args *a)
 {
+	a->nfds = 0;
 	a->fds = xmalloc(sizeof(struct pollfd) * RHASH_SIZE(a->ios));
 	a->fd_to_io = st_init_numtable();
 	rb_hash_foreach(a->ios, io_to_pollfd_i, (VALUE)a);
@@ -140,14 +141,16 @@ static VALUE do_poll(VALUE args)
 	int nr;
 
 	Check_Type(a->ios, T_HASH);
-	hash2pollfds(a);
 
 retry:
+	hash2pollfds(a);
 	nr = (int)rb_thread_blocking_region(nogvl_poll, a, RUBY_UBF_IO, NULL);
 	if (nr < 0) {
 		if (interrupted()) {
-			if (retryable(a))
+			if (retryable(a)) {
+				poll_free(args);
 				goto retry;
+			}
 			return Qnil;
 		}
 		rb_sys_fail("poll");
@@ -196,7 +199,6 @@ static VALUE s_poll(int argc, VALUE *argv, VALUE self)
 
 	rb_scan_args(argc, argv, "11", &a.ios, &timeout);
 	a.timeout = num2timeout(timeout);
-	a.nfds = 0;
 	a.fds = NULL;
 	a.fd_to_io = NULL;
 

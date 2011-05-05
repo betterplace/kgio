@@ -70,4 +70,24 @@ class TestPoll < Test::Unit::TestCase
     ensure
       trap(:USR1, orig)
   end
+
+  def test_poll_EINTR_changed
+    ok = false
+    orig = trap(:USR1) { ok = true }
+    pollset = { @rd => Kgio::POLLIN }
+    thr = Thread.new do
+      sleep 0.100
+      pollset[@wr] = Kgio::POLLOUT
+      Process.kill(:USR1, $$)
+    end
+    t0 = Time.now
+    res = Kgio.poll(pollset, 1000)
+    diff = Time.now - t0
+    thr.join
+    assert_equal({@wr => Kgio::POLLOUT}, res)
+    assert diff < 1.0, "diff=#{diff}"
+    assert ok
+    ensure
+      trap(:USR1, orig)
+  end
 end if Kgio.respond_to?(:poll)
