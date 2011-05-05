@@ -1,6 +1,9 @@
 #include "kgio.h"
 #if defined(USE_KGIO_POLL)
+#include <time.h>
+#include "broken_system_compat.h"
 #include <poll.h>
+#include <errno.h>
 #ifdef HAVE_RUBY_ST_H
 #  include <ruby/st.h>
 #else
@@ -16,7 +19,42 @@ struct poll_args {
 	int timeout;
 	VALUE ios;
 	st_table *fd_to_io;
+	struct timespec start;
 };
+
+static int interrupted(void)
+{
+	switch (errno) {
+	case EINTR:
+#ifdef ERESTART
+	case ERESTART:
+#endif
+		return 1;
+	}
+	return 0;
+}
+
+static int retryable(struct poll_args *a)
+{
+	struct timespec ts;
+
+	if (a->timeout < 0)
+		return 1;
+	if (a->timeout == 0)
+		return 0;
+
+	clock_gettime(hopefully_CLOCK_MONOTONIC, &ts);
+
+	ts.tv_sec -= a->start.tv_sec;
+	ts.tv_nsec -= a->start.tv_nsec;
+	if (ts.tv_nsec < 0) {
+		ts.tv_sec--;
+		ts.tv_nsec += 1000000000;
+	}
+	a->timeout -= ts.tv_sec * 1000;
+	a->timeout -= ts.tv_nsec / 1000000;
+	return (a->timeout >= 0);
+}
 
 static int num2timeout(VALUE timeout)
 {
@@ -70,6 +108,10 @@ static void hash2pollfds(struct poll_args *a)
 static VALUE nogvl_poll(void *ptr)
 {
 	struct poll_args *a = ptr;
+
+	if (a->timeout > 0)
+		clock_gettime(hopefully_CLOCK_MONOTONIC, &a->start);
+
 	return (VALUE)poll(a->fds, a->nfds, a->timeout);
 }
 
@@ -100,8 +142,16 @@ static VALUE do_poll(VALUE args)
 	Check_Type(a->ios, T_HASH);
 	hash2pollfds(a);
 
+retry:
 	nr = (int)rb_thread_blocking_region(nogvl_poll, a, RUBY_UBF_IO, NULL);
-	if (nr < 0) rb_sys_fail("poll");
+	if (nr < 0) {
+		if (interrupted()) {
+			if (retryable(a))
+				goto retry;
+			return Qnil;
+		}
+		rb_sys_fail("poll");
+	}
 	if (nr == 0) return Qnil;
 
 	return poll_result(nr, a);
@@ -156,6 +206,9 @@ static VALUE s_poll(int argc, VALUE *argv, VALUE self)
 void init_kgio_poll(void)
 {
 	VALUE mKgio = rb_define_module("Kgio");
+
+	if (check_clock() < 0)
+		return;
 	rb_define_singleton_method(mKgio, "poll", s_poll, -1);
 
 	sym_wait_readable = ID2SYM(rb_intern("wait_readable"));

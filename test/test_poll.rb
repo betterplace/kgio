@@ -42,19 +42,6 @@ class TestPoll < Test::Unit::TestCase
     assert_nil res
   end
 
-  def test_poll_interrupt
-    foo = nil
-    oldquit = trap(:QUIT) { foo = :bar }
-    thr = Thread.new { sleep 0.100; Process.kill(:QUIT, $$) }
-    t0 = Time.now
-    assert_raises(Errno::EINTR) { Kgio.poll({}) }
-    diff = Time.now - t0
-    thr.join
-    assert diff >= 0.010, "diff=#{diff}"
-    ensure
-      trap(:QUIT, "DEFAULT")
-  end
-
   def test_poll_close
     foo = nil
     thr = Thread.new { sleep 0.100; @wr.close }
@@ -64,5 +51,23 @@ class TestPoll < Test::Unit::TestCase
     thr.join
     assert_equal([ @rd ], res.keys)
     assert diff >= 0.010, "diff=#{diff}"
+  end
+
+  def test_poll_EINTR
+    ok = false
+    orig = trap(:USR1) { ok = true }
+    thr = Thread.new do
+      sleep 0.100
+      Process.kill(:USR1, $$)
+    end
+    t0 = Time.now
+    res = Kgio.poll({@rd => Kgio::POLLIN}, 1000)
+    diff = Time.now - t0
+    thr.join
+    assert_nil res
+    assert diff >= 1.0, "diff=#{diff}"
+    assert ok
+    ensure
+      trap(:USR1, orig)
   end
 end if Kgio.respond_to?(:poll)

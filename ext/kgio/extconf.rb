@@ -1,7 +1,12 @@
 require 'mkmf'
 $CPPFLAGS << ' -D_GNU_SOURCE'
 $CPPFLAGS << ' -DPOSIX_C_SOURCE=1'
-
+$CPPFLAGS += '-D_POSIX_C_SOURCE=200112L'
+unless have_macro('CLOCK_MONOTONIC', 'time.h')
+  have_func('CLOCK_MONOTONIC', 'time.h')
+end
+have_type('clockid_t', 'time.h')
+have_library('rt', 'clock_gettime', 'time.h')
 have_func("poll", "poll.h")
 have_func("getaddrinfo", %w(sys/types.h sys/socket.h netdb.h)) or
   abort "getaddrinfo required"
