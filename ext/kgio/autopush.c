@@ -242,6 +242,7 @@ static void push_pending_data(VALUE io)
 		rb_sys_fail("setsockopt(TCP_CORK/TCP_NOPUSH, 1)");
 }
 #else /* !KGIO_NOPUSH */
+void kgio_autopush_recv(VALUE io){}
 void init_kgio_autopush(void)
 {
 }
