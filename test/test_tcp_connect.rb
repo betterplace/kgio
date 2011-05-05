@@ -66,7 +66,7 @@ class TestKgioTcpConnect < Test::Unit::TestCase
 
   def test_wait_writable_set
     sock = SubSocket.new(@addr)
-    assert_equal "waited", sock.foo
+    assert_equal "waited", sock.foo if RUBY_PLATFORM =~ /linux/
     assert_equal nil, sock.kgio_write("HELLO")
   end
 end
