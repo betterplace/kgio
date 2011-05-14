@@ -19,12 +19,14 @@ if have_header('ruby/io.h')
   rubyio = %w(ruby.h ruby/io.h)
   have_struct_member("rb_io_t", "fd", rubyio)
   have_struct_member("rb_io_t", "mode", rubyio)
+  have_struct_member("rb_io_t", "pathv", rubyio)
 else
   rubyio = %w(ruby.h rubyio.h)
   rb_io_t = have_type("OpenFile", rubyio) ? "OpenFile" : "rb_io_t"
   have_struct_member(rb_io_t, "f", rubyio)
   have_struct_member(rb_io_t, "f2", rubyio)
   have_struct_member(rb_io_t, "mode", rubyio)
+  have_struct_member(rb_io_t, "path", rubyio)
   have_func('rb_fdopen')
 end
 have_type("struct RFile", rubyio) and check_sizeof("struct RFile", rubyio)
