@@ -6,7 +6,7 @@ require 'kgio'
 class TestTryopen < Test::Unit::TestCase
 
   def test_tryopen_success
-    tmp = Kgio.tryopen(__FILE__)
+    tmp = Kgio::File.tryopen(__FILE__)
     assert_kind_of File, tmp
     assert_equal File.read(__FILE__), tmp.read
     assert_equal __FILE__, tmp.path
@@ -18,20 +18,20 @@ class TestTryopen < Test::Unit::TestCase
     tmp = Tempfile.new "tryopen"
     path = tmp.path
     tmp.close!
-    tmp = Kgio.tryopen(path)
+    tmp = Kgio::File.tryopen(path)
     assert_equal :ENOENT, tmp
   end
 
   def test_tryopen_EPERM
     tmp = Tempfile.new "tryopen"
     File.chmod 0000, tmp.path
-    tmp = Kgio.tryopen(tmp.path)
+    tmp = Kgio::File.tryopen(tmp.path)
     assert_equal :EACCES, tmp
   end
 
   def test_tryopen_readwrite
     tmp = Tempfile.new "tryopen"
-    file = Kgio.tryopen(tmp.path, IO::RDWR)
+    file = Kgio::File.tryopen(tmp.path, IO::RDWR)
     file.syswrite "FOO"
     assert_equal "FOO", tmp.sysread(3)
   end
@@ -40,7 +40,7 @@ class TestTryopen < Test::Unit::TestCase
     tmp = Tempfile.new "tryopen"
     path = tmp.path
     tmp.close!
-    file = Kgio.tryopen(path, IO::RDWR|IO::CREAT, 0000)
+    file = Kgio::File.tryopen(path, IO::RDWR|IO::CREAT, 0000)
     assert_equal 0100000, File.stat(path).mode
     ensure
       File.unlink path
@@ -53,17 +53,17 @@ class TestTryopen < Test::Unit::TestCase
     file = tmp.path
     Benchmark.bmbm do |x|
       x.report("tryopen (OK)") do
-        nr.times { Kgio.tryopen(file).close }
+        nr.times { Kgio::File.tryopen(file).close }
       end
       x.report("open (OK)") do
         nr.times { File.readable?(file) && File.open(file).close }
       end
     end
     tmp.close!
-    assert_equal :ENOENT, Kgio.tryopen(file)
+    assert_equal :ENOENT, Kgio::File.tryopen(file)
     Benchmark.bmbm do |x|
       x.report("tryopen (ENOENT)") do
-        nr.times { Kgio.tryopen(file) }
+        nr.times { Kgio::File.tryopen(file) }
       end
       x.report("open (ENOENT)") do
         nr.times { File.readable?(file) && File.open(file) }

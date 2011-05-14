@@ -18,7 +18,6 @@
 
 static ID id_for_fd, id_to_path, id_path;
 static st_table *errno2sym;
-static VALUE cFile;
 
 struct open_args {
 	const char *pathname;
@@ -98,7 +97,7 @@ retry:
 			return rv;
 		}
 	}
-	rv = rb_funcall(cFile, id_for_fd, 1, INT2FIX(fd));
+	rv = rb_funcall(klass, id_for_fd, 1, INT2FIX(fd));
 	set_file_path(rv, pathname);
 	return rv;
 }
@@ -106,6 +105,7 @@ retry:
 void init_kgio_tryopen(void)
 {
 	VALUE mKgio = rb_define_module("Kgio");
+	VALUE cFile;
 	VALUE tmp;
 	VALUE *ptr;
 	long len;
@@ -114,8 +114,8 @@ void init_kgio_tryopen(void)
 	id_for_fd = rb_intern("for_fd");
 	id_to_path = rb_intern("to_path");
 
-	rb_define_singleton_method(mKgio, "tryopen", s_tryopen, -1);
 	cFile = rb_define_class_under(mKgio, "File", rb_cFile);
+	rb_define_singleton_method(cFile, "tryopen", s_tryopen, -1);
 
 	if (!rb_funcall(cFile, rb_intern("method_defined?"), 1,
 	                ID2SYM(id_to_path)))
