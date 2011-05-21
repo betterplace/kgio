@@ -90,4 +90,31 @@ class TestPoll < Test::Unit::TestCase
     ensure
       trap(:USR1, orig)
   end
+
+  def test_poll_signal_torture
+    usr1 = 0
+    empty = 0
+    nr = 100
+    set = { @rd => Kgio::POLLIN }
+    trap(:USR1) { usr1 += 1 }
+    pid = fork do
+      trap(:USR1, "DEFAULT")
+      sleep 0.1
+      ppid = Process.ppid
+      nr.times { Process.kill(:USR1, ppid); sleep 0.05 }
+      @wr.syswrite('.')
+      exit!(0)
+    end
+
+    assert_nothing_raised do
+      empty += 1 until Kgio.poll(set.dup, 100)
+    end
+    _, status = Process.waitpid2(pid)
+    assert status.success?, status.inspect
+    assert usr1 > 0, "usr1: #{usr1}"
+    rescue Object => err
+      p [ :err, err ]
+    ensure
+      trap(:USR1, "DEFAULT")
+  end
 end if Kgio.respond_to?(:poll)

@@ -40,8 +40,6 @@ static int retryable(struct poll_args *a)
 
 	if (a->timeout < 0)
 		return 1;
-	if (a->timeout == 0)
-		return 0;
 
 	clock_gettime(hopefully_CLOCK_MONOTONIC, &ts);
 
@@ -53,7 +51,9 @@ static int retryable(struct poll_args *a)
 	}
 	a->timeout -= ts.tv_sec * 1000;
 	a->timeout -= ts.tv_nsec / 1000000;
-	return (a->timeout >= 0);
+	if (a->timeout < 0)
+		a->timeout = 0;
+	return 1;
 }
 
 static int num2timeout(VALUE timeout)
