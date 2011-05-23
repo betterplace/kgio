@@ -3,7 +3,7 @@
 kgio provides non-blocking I/O methods for Ruby without raising
 exceptions on EAGAIN and EINPROGRESS.  It is intended for use with the
 Unicorn and Rainbows! Rack servers, but may be used by other
-applications.
+applications (that run on Unix-like platforms).
 
 == Features
 
@@ -30,11 +30,8 @@ applications.
 
 == Install
 
-The library consists of a C extension so you'll need a C compiler
-and Ruby development libraries/headers.
-
-You may download the tarball from the Rainbows! project page on Rubyforge
-and run setup.rb after unpacking it:
+The library consists of a C extension so you'll need a Unix-like system
+with a C compiler and Ruby development libraries/headers.
 
 http://rubyforge.org/frs/?group_id=8977
 
