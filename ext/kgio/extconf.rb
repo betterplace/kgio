@@ -7,6 +7,12 @@ unless have_macro('CLOCK_MONOTONIC', 'time.h')
 end
 have_type('clockid_t', 'time.h')
 have_library('rt', 'clock_gettime', 'time.h')
+
+# taken from ext/socket/extconf.rb in ruby/trunk:
+# OpenSolaris:
+have_library("nsl", "t_open")
+have_library("socket", "socket")
+
 have_func("poll", "poll.h")
 have_func("getaddrinfo", %w(sys/types.h sys/socket.h netdb.h)) or
   abort "getaddrinfo required"
