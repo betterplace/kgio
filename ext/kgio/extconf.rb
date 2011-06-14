@@ -21,6 +21,8 @@ have_func("getnameinfo", %w(sys/types.h sys/socket.h netdb.h)) or
 have_type("struct sockaddr_storage", %w(sys/types.h sys/socket.h)) or
   abort "struct sockaddr_storage required"
 have_func('accept4', %w(sys/socket.h))
+have_header("sys/select.h")
+
 if have_header('ruby/io.h')
   rubyio = %w(ruby.h ruby/io.h)
   have_struct_member("rb_io_t", "fd", rubyio)
@@ -42,5 +44,7 @@ have_func('rb_io_ascii8bit_binmode')
 have_func('rb_thread_blocking_region')
 have_func('rb_thread_io_blocking_region')
 have_func('rb_str_set_len')
+have_func('rb_time_interval')
+have_func('rb_wait_for_single_fd')
 
 create_makefile('kgio_ext')
