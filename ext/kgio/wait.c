@@ -1,23 +1,42 @@
 #include "kgio.h"
-#include "time_interval.h"
-#include "wait_for_single_fd.h"
-
 static ID id_wait_rd, id_wait_wr;
 
-static int kgio_io_wait(int argc, VALUE *argv, VALUE self, int events)
+#if defined(HAVE_RB_TIME_INTERVAL) && defined(HAVE_RB_WAIT_FOR_SINGLE_FD)
+static int kgio_timedwait(VALUE self, VALUE timeout, int write_p)
 {
-	int fd = my_fileno(self);
-	VALUE t;
-	struct timeval *tp;
-	struct timeval tv;
+	struct timeval tv = rb_time_interval(timeout);
+	int events = write_p ? RB_WAITFD_OUT : RB_WAITFD_IN;
 
-	if (rb_scan_args(argc, argv, "01", &t) == 0) {
-		tp = NULL;
-	} else {
-		tv = rb_time_interval(t);
-		tp = &tv;
-	}
-	return rb_wait_for_single_fd(fd, events, tp);
+	return rb_wait_for_single_fd(my_fileno(self), events, &tv);
+}
+#else  /* ! (HAVE_RB_TIME_INTERVAL && HAVE_RB_WAIT_FOR_SINGLE_FD) */
+static int kgio_timedwait(VALUE self, VALUE timeout, int write_p)
+{
+	VALUE argv[4];
+	VALUE set = rb_ary_new3(1, self);
+
+	argv[0] = write_p ? Qnil : set;
+	argv[1] = write_p ? set : Qnil;
+	argv[2] = Qnil;
+	argv[3] = timeout;
+
+	set = rb_funcall2(rb_cIO, rb_intern("select"), 4, argv);
+	return NIL_P(set) ? 0 : 1;
+}
+#endif /* ! (HAVE_RB_TIME_INTERVAL && HAVE_RB_WAIT_FOR_SINGLE_FD) */
+
+static int kgio_wait(int argc, VALUE *argv, VALUE self, int write_p)
+{
+	int fd;
+	VALUE timeout;
+
+	if (rb_scan_args(argc, argv, "01", &timeout) == 1 && !NIL_P(timeout))
+		return kgio_timedwait(self, timeout, write_p);
+
+	fd = my_fileno(self);
+	errno = EAGAIN;
+	write_p ? rb_io_wait_writable(fd) : rb_io_wait_readable(fd);
+	return 1;
 }
 
 /*
@@ -39,7 +58,7 @@ static int kgio_io_wait(int argc, VALUE *argv, VALUE self, int events)
  */
 static VALUE kgio_wait_readable(int argc, VALUE *argv, VALUE self)
 {
-	int r = kgio_io_wait(argc, argv, self, RB_WAITFD_IN);
+	int r = kgio_wait(argc, argv, self, 0);
 
 	if (r < 0) rb_sys_fail("kgio_wait_readable");
 	return r == 0 ? Qnil : self;
@@ -59,7 +78,7 @@ static VALUE kgio_wait_readable(int argc, VALUE *argv, VALUE self)
  */
 static VALUE kgio_wait_writable(int argc, VALUE *argv, VALUE self)
 {
-	int r = kgio_io_wait(argc, argv, self, RB_WAITFD_OUT);
+	int r = kgio_wait(argc, argv, self, 1);
 
 	if (r < 0) rb_sys_fail("kgio_wait_writable");
 	return r == 0 ? Qnil : self;
