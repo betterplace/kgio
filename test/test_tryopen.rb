@@ -36,6 +36,14 @@ class TestTryopen < Test::Unit::TestCase
     assert_equal "FOO", tmp.sysread(3)
   end
 
+  def test_tryopen_try_readwrite
+    tmp = Tempfile.new "tryopen"
+    file = Kgio::File.tryopen(tmp.path, IO::RDWR)
+    assert_nil file.kgio_trywrite("FOO")
+    file.rewind
+    assert_equal "FOO", file.kgio_tryread(3)
+  end
+
   def test_tryopen_mode
     tmp = Tempfile.new "tryopen"
     path = tmp.path

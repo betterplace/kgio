@@ -124,6 +124,7 @@ retry:
 void init_kgio_tryopen(void)
 {
 	VALUE mKgio = rb_define_module("Kgio");
+	VALUE mPipeMethods = rb_const_get(mKgio, rb_intern("PipeMethods"));
 	VALUE cFile;
 	VALUE tmp;
 	VALUE *ptr;
@@ -144,6 +145,7 @@ void init_kgio_tryopen(void)
 	 */
 	cFile = rb_define_class_under(mKgio, "File", rb_cFile);
 	rb_define_singleton_method(cFile, "tryopen", s_tryopen, -1);
+	rb_include_module(cFile, mPipeMethods);
 
 	if (!rb_funcall(cFile, rb_intern("method_defined?"), 1,
 	                ID2SYM(id_to_path)))
