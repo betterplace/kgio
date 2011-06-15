@@ -14,3 +14,4 @@ ext/kgio/kgio_ext.c
 ext/kgio/poll.c
 ext/kgio/read_write.c
 ext/kgio/wait.c
+ext/kgio/tryopen.c

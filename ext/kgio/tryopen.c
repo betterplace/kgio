@@ -51,6 +51,25 @@ static VALUE rb_thread_blocking_region(
 }
 #endif /* ! HAVE_RB_THREAD_BLOCKING_REGION */
 
+/*
+ * call-seq:
+ *
+ *	Kgio::File.tryopen(filename, [, mode [, perm]])	-> Kgio::File or Symbol
+ *
+ * Returns a Kgio::File object on a successful open.  +filename+ is a
+ * path to any file on the filesystem.  If specified, +mode+ is a bitmask
+ * of flags (see IO.sysopen) and +perm+ should be an octal number.
+ *
+ * This does not raise errors for most failures, but installs returns a
+ * Ruby symbol for the constant in the Errno::* namespace.
+ *
+ * Common error symbols are:
+ *
+ * - :ENOENT
+ * - :EACCES
+ *
+ * See your open(2) manpage for more information on open(2) errors.
+ */
 static VALUE s_tryopen(int argc, VALUE *argv, VALUE klass)
 {
 	int fd;
@@ -114,6 +133,15 @@ void init_kgio_tryopen(void)
 	id_for_fd = rb_intern("for_fd");
 	id_to_path = rb_intern("to_path");
 
+	/*
+	 * Document-class: Kgio::File
+	 *
+	 * This subclass of the core File class adds the "tryopen" singleton
+	 * method for opening files.  A single "tryopen" and check for the
+	 * return value may be used to avoid unnecessary stat(2) syscalls
+	 * or File.open exceptions when checking for the existence of a file
+	 * and opening it.
+	 */
 	cFile = rb_define_class_under(mKgio, "File", rb_cFile);
 	rb_define_singleton_method(cFile, "tryopen", s_tryopen, -1);
 
