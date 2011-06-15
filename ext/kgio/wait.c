@@ -21,9 +21,17 @@ static int kgio_io_wait(int argc, VALUE *argv, VALUE self, int events)
 }
 
 /*
- * Blocks the running Thread indefinitely until +self+ IO object is readable.
- * This method is automatically called by default whenever kgio_read needs
- * to block on input.
+ * call-seq:
+ *
+ *	io.kgio_wait_readable           -> IO
+ *	io.kgio_wait_readable(timeout)  -> IO or nil
+ *
+ * Blocks the running Thread indefinitely until the IO object is readable
+ * or if +timeout+ expires.  If +timeout+ is specified and expires, +nil+
+ * is returned.
+ *
+ * This method is automatically called (without timeout argument) by default
+ * whenever kgio_read needs to block on input.
  *
  * Users of alternative threading/fiber libraries are
  * encouraged to override this method in their subclasses or modules to
@@ -38,9 +46,12 @@ static VALUE kgio_wait_readable(int argc, VALUE *argv, VALUE self)
 }
 
 /*
- * Blocks the running Thread indefinitely until +self+ IO object is writable.
- * This method is automatically called whenever kgio_write needs to
- * block on output.
+ * Blocks the running Thread indefinitely until the IO object is writable
+ * or if +timeout+ expires.  If +timeout+ is specified and expires, +nil+
+ * is returned.
+ *
+ * This method is automatically called (without timeout argument) by default
+ * whenever kgio_write needs to block on output.
  *
  * Users of alternative threading/fiber libraries are
  * encouraged to override this method in their subclasses or modules to
