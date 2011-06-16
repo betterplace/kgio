@@ -1,6 +1,8 @@
 #include "kgio.h"
 #include "missing_accept4.h"
 #include "sock_for_fd.h"
+#include "my_fileno.h"
+#include "nonblock.h"
 
 static VALUE localhost;
 static VALUE cClientSocket;

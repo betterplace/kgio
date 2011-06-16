@@ -1,5 +1,6 @@
 #include "kgio.h"
 #if defined(USE_KGIO_POLL)
+#include "my_fileno.h"
 #include <time.h>
 #include "broken_system_compat.h"
 #include <poll.h>

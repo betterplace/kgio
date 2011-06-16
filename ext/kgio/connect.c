@@ -61,7 +61,6 @@ static VALUE tcp_connect(VALUE klass, VALUE ip, VALUE port, int io_wait)
 	struct sockaddr_storage addr;
 	int rc;
 	struct addrinfo *res;
-	VALUE sock;
 	const char *ipname = StringValuePtr(ip);
 	char ipport[6];
 	unsigned uport = FIX2UINT(port);

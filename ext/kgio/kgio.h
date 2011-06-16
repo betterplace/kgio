@@ -19,8 +19,6 @@
 #include <netdb.h>
 
 #include "ancient_ruby.h"
-#include "nonblock.h"
-#include "my_fileno.h"
 
 struct io_args {
 	VALUE io;

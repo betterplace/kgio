@@ -1,4 +1,5 @@
 #include "kgio.h"
+#include "my_fileno.h"
 static ID id_wait_rd, id_wait_wr;
 
 #if defined(HAVE_RB_TIME_INTERVAL) && defined(HAVE_RB_WAIT_FOR_SINGLE_FD)

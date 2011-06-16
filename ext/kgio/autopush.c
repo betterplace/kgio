@@ -13,6 +13,7 @@
  */
 
 #include "kgio.h"
+#include "my_fileno.h"
 #include <netinet/tcp.h>
 
 /*
@@ -142,10 +143,6 @@ static VALUE autopush_get(VALUE io)
  */
 static VALUE autopush_set(VALUE io, VALUE vbool)
 {
-	int fd = my_fileno(io);
-	int val;
-	socklen_t len = sizeof(val);
-
 	if (RTEST(vbool))
 		state_set(io, AUTOPUSH_STATE_WRITER);
 	else

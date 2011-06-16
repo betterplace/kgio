@@ -1,4 +1,6 @@
 #include "kgio.h"
+#include "my_fileno.h"
+#include "nonblock.h"
 static VALUE sym_wait_readable, sym_wait_writable;
 static VALUE eErrno_EPIPE, eErrno_ECONNRESET;
 static ID id_set_backtrace;
