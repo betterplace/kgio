@@ -520,9 +520,10 @@ void init_kgio_read_write(void)
 	rb_define_method(mSocketMethods, "kgio_peek", kgio_peek, -1);
 
 	/*
-	 * Returns the client IPv4 address of the socket in dotted quad
-	 * form as a string.  This is always the value of the
-	 * Kgio::LOCALHOST constant for UNIX domain sockets.
+	 * Returns the client IP address of the socket as a string
+	 * (e.g. "127.0.0.1" or "::1").
+	 * This is always the value of the Kgio::LOCALHOST constant
+	 * for UNIX domain sockets.
 	 */
 	rb_define_attr(mSocketMethods, "kgio_addr", 1, 1);
 	id_set_backtrace = rb_intern("set_backtrace");
