@@ -2,11 +2,12 @@
 #define MISSING_ANCIENT_RUBY_H
 
 #ifndef HAVE_RB_STR_SET_LEN
-static void rb_str_set_len(VALUE str, long len)
+static void my_str_set_len(VALUE str, long len)
 {
 	RSTRING(str)->len = len;
 	RSTRING(str)->ptr[len] = '\0';
 }
+#define rb_str_set_len(str,len) my_str_set_len((str),(len))
 #endif /* ! HAVE_RB_STR_SET_LEN */
 
 #ifndef RSTRING_PTR
