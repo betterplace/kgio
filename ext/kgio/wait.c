@@ -66,6 +66,11 @@ static VALUE kgio_wait_readable(int argc, VALUE *argv, VALUE self)
 }
 
 /*
+ * call-seq:
+ *
+ *	io.kgio_wait_writeable          -> IO
+ *	io.kgio_wait_writable(timeout)  -> IO or nil
+ *
  * Blocks the running Thread indefinitely until the IO object is writable
  * or if +timeout+ expires.  If +timeout+ is specified and expires, +nil+
  * is returned.
