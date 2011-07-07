@@ -283,8 +283,8 @@ static VALUE addr_bang(VALUE io)
  * value of +Kgio.accept_cloexec+ and +Kgio.accept_nonblock+.  +flags+
  * is a bitmask that may contain any combination of:
  *
- * - Fcntl::FD_CLOEXEC - close-on-exec flag
- * - IO::NONBLOCK - non-blocking flag
+ * - Kgio::SOCK_CLOEXEC - close-on-exec flag
+ * - Kgio::SOCK_NONBLOCK - non-blocking flag
  */
 static VALUE tcp_tryaccept(int argc, VALUE *argv, VALUE self)
 {
@@ -320,8 +320,8 @@ static VALUE tcp_tryaccept(int argc, VALUE *argv, VALUE self)
  * value of +Kgio.accept_cloexec+ and +Kgio.accept_nonblock+.  +flags+
  * is a bitmask that may contain any combination of:
  *
- * - Fcntl::FD_CLOEXEC - close-on-exec flag
- * - IO::NONBLOCK - non-blocking flag
+ * - Kgio::SOCK_CLOEXEC - close-on-exec flag
+ * - Kgio::SOCK_NONBLOCK - non-blocking flag
  */
 static VALUE tcp_accept(int argc, VALUE *argv, VALUE self)
 {
@@ -495,6 +495,18 @@ void init_kgio_accept(void)
 {
 	VALUE cUNIXServer, cTCPServer;
 	VALUE mKgio = rb_define_module("Kgio");
+
+	/*
+	 * this maps to the SOCK_NONBLOCK constant in Linux for setting
+	 * the non-blocking flag on newly accepted sockets.
+	 */
+	rb_define_const(mKgio, "SOCK_NONBLOCK", INT2NUM(SOCK_NONBLOCK));
+
+	/*
+	 * this maps to the SOCK_CLOEXEC constant in Linux for setting
+	 * the close-on-exec flag on newly accepted descriptors.
+	 */
+	rb_define_const(mKgio, "SOCK_CLOEXEC", INT2NUM(SOCK_CLOEXEC));
 
 	localhost = rb_const_get(mKgio, rb_intern("LOCALHOST"));
 	cKgio_Socket = rb_const_get(mKgio, rb_intern("Socket"));
