@@ -204,6 +204,7 @@ retry:
 			if (force_nonblock)
 				return Qnil;
 			a->fd = my_fileno(a->accept_io);
+			errno = EAGAIN;
 			set_blocking_or_block(a->fd);
 #ifdef ECONNABORTED
 		case ECONNABORTED:
