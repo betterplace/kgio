@@ -5,11 +5,11 @@
 #  include <sys/types.h>
 #  include <sys/socket.h>
 #  ifndef SOCK_CLOEXEC
-#    if (FD_CLOEXEC == O_NONBLOCK)
+#    if (02000000 == O_NONBLOCK)
 #      define SOCK_CLOEXEC 1
 #      define SOCK_NONBLOCK 2
 #    else
-#      define SOCK_CLOEXEC FD_CLOEXEC
+#      define SOCK_CLOEXEC 02000000
 #      define SOCK_NONBLOCK O_NONBLOCK
 #    endif
 #  endif
