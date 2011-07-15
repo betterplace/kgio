@@ -63,7 +63,11 @@ static VALUE tcp_connect(VALUE klass, VALUE ip, VALUE port, int io_wait)
 	struct addrinfo *res;
 	const char *ipname = StringValuePtr(ip);
 	char ipport[6];
-	unsigned uport = FIX2UINT(port);
+	unsigned uport;
+
+	if (TYPE(port) != T_FIXNUM)
+		rb_raise(rb_eTypeError, "port must be a non-negative integer");
+	uport = FIX2UINT(port);
 
 	rc = snprintf(ipport, sizeof(ipport), "%u", uport);
 	if (rc >= (int)sizeof(ipport) || rc <= 0)
