@@ -354,8 +354,8 @@ static VALUE tcp_accept(int argc, VALUE *argv, VALUE self)
  * value of +Kgio.accept_cloexec+ and +Kgio.accept_nonblock+.  +flags+
  * is a bitmask that may contain any combination of:
  *
- * - Fcntl::FD_CLOEXEC - close-on-exec flag
- * - IO::NONBLOCK - non-blocking flag
+ * - Kgio::SOCK_CLOEXEC - close-on-exec flag
+ * - Kgio::SOCK_NONBLOCK - non-blocking flag
  */
 static VALUE unix_tryaccept(int argc, VALUE *argv, VALUE self)
 {
@@ -389,8 +389,8 @@ static VALUE unix_tryaccept(int argc, VALUE *argv, VALUE self)
  * value of +Kgio.accept_cloexec+ and +Kgio.accept_nonblock+.  +flags+
  * is a bitmask that may contain any combination of:
  *
- * - Fcntl::FD_CLOEXEC - close-on-exec flag
- * - IO::NONBLOCK - non-blocking flag
+ * - Kgio::SOCK_CLOEXEC - close-on-exec flag
+ * - Kgio::SOCK_NONBLOCK - non-blocking flag
  */
 static VALUE unix_accept(int argc, VALUE *argv, VALUE self)
 {
