@@ -29,9 +29,11 @@
 #if SOCK_FOR_FD == 19  /* modeled after ext/socket/init.c */
 static VALUE sock_for_fd(VALUE klass, int fd)
 {
-	VALUE sock = rb_obj_alloc(klass);
+	VALUE sock;
 	rb_io_t *fp;
 
+	rb_update_max_fd(fd); /* 1.9.3+ API */
+	sock = rb_obj_alloc(klass);
 	MakeOpenFile(sock, fp);
 	fp->fd = fd;
 	fp->mode = FMODE_READWRITE|FMODE_DUPLEX|FMODE_NOREVLOOKUP;

@@ -46,4 +46,7 @@ VALUE kgio_call_wait_readable(VALUE io);
 #  define USE_KGIO_POLL
 #endif /* USE_KGIO_POLL */
 
+#ifndef HAVE_RB_UPDATE_MAX_FD
+#  define rb_update_max_fd(fd) for (;0;)
+#endif
 #endif /* KGIO_H */
