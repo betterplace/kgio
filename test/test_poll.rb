@@ -53,6 +53,19 @@ class TestPoll < Test::Unit::TestCase
     assert diff >= 0.010, "diff=#{diff}"
   end
 
+  def test_signal_close
+    orig = trap(:USR1) { @rd.close }
+    res = nil
+    thr = Thread.new { sleep 0.100; Process.kill(:USR1, $$) }
+    t0 = Time.now
+    assert_raises(IOError) { Kgio.poll({@rd => Kgio::POLLIN}) }
+    diff = Time.now - t0
+    thr.join
+    assert diff >= 0.010, "diff=#{diff}"
+    ensure
+      trap(:USR1, orig)
+  end
+
   def test_poll_EINTR
     ok = false
     orig = trap(:USR1) { ok = true }
