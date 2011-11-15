@@ -413,6 +413,8 @@ static VALUE unix_accept(int argc, VALUE *argv, VALUE self)
  *
  * Returns true if newly accepted Kgio::Sockets are created with the
  * FD_CLOEXEC file descriptor flag, false if not.
+ *
+ * Deprecated, use the per-socket flags for kgio_*accept instead.
  */
 static VALUE get_cloexec(VALUE mod)
 {
@@ -427,6 +429,8 @@ static VALUE get_cloexec(VALUE mod)
  *
  * Returns true if newly accepted Kgio::Sockets are created with the
  * O_NONBLOCK file status flag, false if not.
+ *
+ * Deprecated, use the per-socket flags for kgio_*accept instead.
  */
 static VALUE get_nonblock(VALUE mod)
 {
@@ -448,6 +452,8 @@ static VALUE get_nonblock(VALUE mod)
  *
  * This is on by default, as there is little reason to deal to enable
  * it for client sockets on a socket server.
+ *
+ * Deprecated, use the per-socket flags for kgio_*accept instead.
  */
 static VALUE set_cloexec(VALUE mod, VALUE boolean)
 {
@@ -480,6 +486,10 @@ static VALUE set_cloexec(VALUE mod, VALUE boolean)
  * available (and on newer GNU/Linux, accept4() may also set
  * the non-blocking flag.  This defaults to +true+ on non-GNU/Linux
  * systems.
+ *
+ * This is always true on Ruby implementations using user-space threads.
+ *
+ * Deprecated, use the per-socket flags for kgio_*accept instead.
  */
 static VALUE set_nonblock(VALUE mod, VALUE boolean)
 {
