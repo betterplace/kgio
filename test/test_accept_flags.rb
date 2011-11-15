@@ -13,7 +13,6 @@ class TestAcceptFlags < Test::Unit::TestCase
     client = TCPSocket.new(@host, @port)
     accepted = @srv.kgio_accept(nil, Kgio::SOCK_NONBLOCK)
     assert_instance_of Kgio::Socket, accepted
-    assert accepted.nonblock?
     flags = accepted.fcntl(Fcntl::F_GETFD)
     assert_equal 0, flags & Fcntl::FD_CLOEXEC
     assert_nil client.close
@@ -22,7 +21,6 @@ class TestAcceptFlags < Test::Unit::TestCase
     client = TCPSocket.new(@host, @port)
     accepted = @srv.kgio_accept(nil, Kgio::SOCK_CLOEXEC)
     assert_instance_of Kgio::Socket, accepted
-    assert ! accepted.nonblock?
     flags = accepted.fcntl(Fcntl::F_GETFD)
     assert_equal Fcntl::FD_CLOEXEC, flags & Fcntl::FD_CLOEXEC
     assert_nil client.close
@@ -31,7 +29,6 @@ class TestAcceptFlags < Test::Unit::TestCase
     client = TCPSocket.new(@host, @port)
     accepted = @srv.kgio_accept(nil, Kgio::SOCK_CLOEXEC|Kgio::SOCK_NONBLOCK)
     assert_instance_of Kgio::Socket, accepted
-    assert accepted.nonblock?
     flags = accepted.fcntl(Fcntl::F_GETFD)
     assert_equal Fcntl::FD_CLOEXEC, flags & Fcntl::FD_CLOEXEC
     assert_nil client.close
@@ -40,7 +37,6 @@ class TestAcceptFlags < Test::Unit::TestCase
     client = TCPSocket.new(@host, @port)
     accepted = @srv.kgio_accept(nil, Kgio::SOCK_CLOEXEC|Kgio::SOCK_NONBLOCK)
     assert_instance_of Kgio::Socket, accepted
-    assert accepted.nonblock?
     flags = accepted.fcntl(Fcntl::F_GETFD)
     assert_equal Fcntl::FD_CLOEXEC, flags & Fcntl::FD_CLOEXEC
     assert_nil client.close

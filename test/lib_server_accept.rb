@@ -25,7 +25,6 @@ module LibServerAccept
     IO.select([@srv])
     b = @srv.kgio_tryaccept nil, 0
     assert_kind_of Kgio::Socket, b
-    assert_equal false, b.nonblock?
     assert_equal 0, b.fcntl(Fcntl::F_GETFD)
   end
 
@@ -34,7 +33,6 @@ module LibServerAccept
     IO.select([@srv])
     b = @srv.kgio_accept nil, 0
     assert_kind_of Kgio::Socket, b
-    assert_equal false, b.nonblock?
     assert_equal 0, b.fcntl(Fcntl::F_GETFD)
   end
 
