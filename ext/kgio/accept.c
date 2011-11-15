@@ -10,7 +10,7 @@ static VALUE cKgio_Socket;
 static VALUE mSocketMethods;
 static VALUE iv_kgio_addr;
 
-#if defined(__linux__)
+#if defined(__linux__) && defined(HAVE_RB_THREAD_BLOCKING_REGION)
 static int accept4_flags = SOCK_CLOEXEC;
 #else /* ! linux */
 static int accept4_flags = SOCK_CLOEXEC | SOCK_NONBLOCK;
@@ -125,6 +125,10 @@ static int thread_accept(struct accept_args *a, int force_nonblock)
 
 	/* always use non-blocking accept() under 1.8 for green threads */
 	set_nonblocking(a->fd);
+
+	/* created sockets are always non-blocking under 1.8, too */
+	a->flags |= SOCK_NONBLOCK;
+
 	TRAP_BEG;
 	rv = (int)xaccept(a);
 	TRAP_END;
