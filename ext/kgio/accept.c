@@ -283,12 +283,11 @@ static VALUE addr_bang(VALUE io)
  * An optional +klass+ argument may be specified to override the
  * Kgio::Socket-class on a successful return value.
  *
- * An optional +flags+ argument may also be specifed to override the
- * value of +Kgio.accept_cloexec+ and +Kgio.accept_nonblock+.  +flags+
- * is a bitmask that may contain any combination of:
+ * An optional +flags+ argument may also be specified.
+ * +flags+ is a bitmask that may contain any combination of:
  *
- * - Kgio::SOCK_CLOEXEC - close-on-exec flag
- * - Kgio::SOCK_NONBLOCK - non-blocking flag
+ * - Kgio::SOCK_CLOEXEC - close-on-exec flag (enabled by default)
+ * - Kgio::SOCK_NONBLOCK - non-blocking flag (unimportant)
  */
 static VALUE tcp_tryaccept(int argc, VALUE *argv, VALUE self)
 {
@@ -320,12 +319,11 @@ static VALUE tcp_tryaccept(int argc, VALUE *argv, VALUE self)
  * An optional +klass+ argument may be specified to override the
  * Kgio::Socket-class on a successful return value.
  *
- * An optional +flags+ argument may also be specifed to override the
- * value of +Kgio.accept_cloexec+ and +Kgio.accept_nonblock+.  +flags+
- * is a bitmask that may contain any combination of:
+ * An optional +flags+ argument may also be specified.
+ * +flags+ is a bitmask that may contain any combination of:
  *
- * - Kgio::SOCK_CLOEXEC - close-on-exec flag
- * - Kgio::SOCK_NONBLOCK - non-blocking flag
+ * - Kgio::SOCK_CLOEXEC - close-on-exec flag (enabled by default)
+ * - Kgio::SOCK_NONBLOCK - non-blocking flag (unimportant)
  */
 static VALUE tcp_accept(int argc, VALUE *argv, VALUE self)
 {
@@ -354,12 +352,11 @@ static VALUE tcp_accept(int argc, VALUE *argv, VALUE self)
  * An optional +klass+ argument may be specified to override the
  * Kgio::Socket-class on a successful return value.
  *
- * An optional +flags+ argument may also be specifed to override the
- * value of +Kgio.accept_cloexec+ and +Kgio.accept_nonblock+.  +flags+
- * is a bitmask that may contain any combination of:
+ * An optional +flags+ argument may also be specified.
+ * +flags+ is a bitmask that may contain any combination of:
  *
- * - Kgio::SOCK_CLOEXEC - close-on-exec flag
- * - Kgio::SOCK_NONBLOCK - non-blocking flag
+ * - Kgio::SOCK_CLOEXEC - close-on-exec flag (enabled by default)
+ * - Kgio::SOCK_NONBLOCK - non-blocking flag (unimportant)
  */
 static VALUE unix_tryaccept(int argc, VALUE *argv, VALUE self)
 {
@@ -389,12 +386,11 @@ static VALUE unix_tryaccept(int argc, VALUE *argv, VALUE self)
  * An optional +klass+ argument may be specified to override the
  * Kgio::Socket-class on a successful return value.
  *
- * An optional +flags+ argument may also be specifed to override the
- * value of +Kgio.accept_cloexec+ and +Kgio.accept_nonblock+.  +flags+
- * is a bitmask that may contain any combination of:
+ * An optional +flags+ argument may also be specified.
+ * +flags+ is a bitmask that may contain any combination of:
  *
- * - Kgio::SOCK_CLOEXEC - close-on-exec flag
- * - Kgio::SOCK_NONBLOCK - non-blocking flag
+ * - Kgio::SOCK_CLOEXEC - close-on-exec flag (enabled by default)
+ * - Kgio::SOCK_NONBLOCK - non-blocking flag (unimportant)
  */
 static VALUE unix_accept(int argc, VALUE *argv, VALUE self)
 {
@@ -511,14 +507,18 @@ void init_kgio_accept(void)
 	VALUE mKgio = rb_define_module("Kgio");
 
 	/*
-	 * this maps to the SOCK_NONBLOCK constant in Linux for setting
-	 * the non-blocking flag on newly accepted sockets.
+	 * Maps to the SOCK_NONBLOCK constant in Linux for setting
+	 * the non-blocking flag on newly accepted sockets.  This is
+	 * usually unnecessary as sockets are made non-blocking
+	 * whenever non-blocking methods are used.
 	 */
 	rb_define_const(mKgio, "SOCK_NONBLOCK", INT2NUM(SOCK_NONBLOCK));
 
 	/*
-	 * this maps to the SOCK_CLOEXEC constant in Linux for setting
-	 * the close-on-exec flag on newly accepted descriptors.
+	 * Maps to the SOCK_CLOEXEC constant in Linux for setting
+	 * the close-on-exec flag on newly accepted descriptors.  This
+	 * is enabled by default, and there is usually no reason to
+	 * disable close-on-exec for accepted sockets.
 	 */
 	rb_define_const(mKgio, "SOCK_CLOEXEC", INT2NUM(SOCK_CLOEXEC));
 
