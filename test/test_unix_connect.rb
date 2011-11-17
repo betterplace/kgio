@@ -34,6 +34,10 @@ class TestKgioUnixConnect < Test::Unit::TestCase
 
   def test_unix_socket_new
     sock = Kgio::UNIXSocket.new(@path)
+
+    sock.respond_to?(:close_on_exec?) and
+      assert_equal(RUBY_VERSION.to_f >= 2.0, sock.close_on_exec?)
+
     assert_instance_of Kgio::UNIXSocket, sock
     ready = IO.select(nil, [ sock ])
     assert_equal sock, ready[1][0]
@@ -42,6 +46,10 @@ class TestKgioUnixConnect < Test::Unit::TestCase
 
   def test_new
     sock = Kgio::Socket.new(@addr)
+
+    sock.respond_to?(:close_on_exec?) and
+      assert_equal(RUBY_VERSION.to_f >= 2.0, sock.close_on_exec?)
+
     assert_instance_of Kgio::Socket, sock
     ready = IO.select(nil, [ sock ])
     assert_equal sock, ready[1][0]

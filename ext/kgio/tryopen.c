@@ -25,11 +25,15 @@ struct open_args {
 	mode_t mode;
 };
 
+#ifndef HAVE_RB_CLOEXEC_OPEN
+#  define rb_cloexec_open(p,f,m) open((p),(f),(m))
+#endif
+
 static VALUE nogvl_open(void *ptr)
 {
 	struct open_args *o = ptr;
 
-	return (VALUE)open(o->pathname, o->flags, o->mode);
+	return (VALUE)rb_cloexec_open(o->pathname, o->flags, o->mode);
 }
 
 #ifndef HAVE_RB_THREAD_BLOCKING_REGION

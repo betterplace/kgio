@@ -31,10 +31,17 @@ class TestKgioTcpConnect < Test::Unit::TestCase
     ready = IO.select(nil, [ sock ])
     assert_equal sock, ready[1][0]
     assert_equal nil, sock.kgio_write("HELLO")
+
+    sock.respond_to?(:close_on_exec?) and
+      assert_equal(RUBY_VERSION.to_f >= 2.0, sock.close_on_exec?)
   end
 
   def test_start
     sock = Kgio::Socket.start(@addr)
+
+    sock.respond_to?(:close_on_exec?) and
+      assert_equal(RUBY_VERSION.to_f >= 2.0, sock.close_on_exec?)
+
     assert_kind_of Kgio::Socket, sock
     ready = IO.select(nil, [ sock ])
     assert_equal sock, ready[1][0]
@@ -50,6 +57,10 @@ class TestKgioTcpConnect < Test::Unit::TestCase
 
   def test_tcp_socket_new
     sock = Kgio::TCPSocket.new(@host, @port)
+
+    sock.respond_to?(:close_on_exec?) and
+      assert_equal(RUBY_VERSION.to_f >= 2.0, sock.close_on_exec?)
+
     assert_instance_of Kgio::TCPSocket, sock
     ready = IO.select(nil, [ sock ])
     assert_equal sock, ready[1][0]

@@ -9,16 +9,30 @@ static void close_fail(int fd, const char *msg)
 	rb_sys_fail(msg);
 }
 
-#ifdef SOCK_NONBLOCK
-#  define MY_SOCK_STREAM (SOCK_STREAM|SOCK_NONBLOCK)
+static int MY_SOCK_STREAM =
+#if defined(SOCK_NONBLOCK) && defined(SOCK_CLOEXEC)
+#  ifdef HAVE_RB_FD_FIX_CLOEXEC
+  (SOCK_STREAM|SOCK_NONBLOCK|SOCK_CLOEXEC)
+#  else
+  (SOCK_STREAM|SOCK_NONBLOCK)
+#  endif
 #else
-#  define MY_SOCK_STREAM SOCK_STREAM
+  SOCK_STREAM
 #endif /* ! SOCK_NONBLOCK */
+;
+
+/* do not set close-on-exec by default on Ruby <2.0.0 */
+#ifndef HAVE_RB_FD_FIX_CLOEXEC
+#  define rb_fd_fix_cloexec(fd) for (;0;)
+#endif /* HAVE_RB_FD_FIX_CLOEXEC */
 
 static VALUE
 my_connect(VALUE klass, int io_wait, int domain, void *addr, socklen_t addrlen)
 {
-	int fd = socket(domain, MY_SOCK_STREAM, 0);
+	int fd;
+
+retry:
+	fd = socket(domain, MY_SOCK_STREAM, 0);
 
 	if (fd == -1) {
 		switch (errno) {
@@ -30,15 +44,22 @@ my_connect(VALUE klass, int io_wait, int domain, void *addr, socklen_t addrlen)
 			errno = 0;
 			rb_gc();
 			fd = socket(domain, MY_SOCK_STREAM, 0);
+			break;
+		case EINVAL:
+			if (MY_SOCK_STREAM != SOCK_STREAM) {
+				MY_SOCK_STREAM = SOCK_STREAM;
+				goto retry;
+			}
 		}
 		if (fd == -1)
 			rb_sys_fail("socket");
 	}
 
-#ifndef SOCK_NONBLOCK
-	if (fcntl(fd, F_SETFL, O_RDWR | O_NONBLOCK) == -1)
-		close_fail(fd, "fcntl(F_SETFL, O_RDWR | O_NONBLOCK)");
-#endif /* SOCK_NONBLOCK */
+	if (MY_SOCK_STREAM == SOCK_STREAM) {
+		if (fcntl(fd, F_SETFL, O_RDWR | O_NONBLOCK) == -1)
+			close_fail(fd, "fcntl(F_SETFL, O_RDWR | O_NONBLOCK)");
+		rb_fd_fix_cloexec(fd);
+	}
 
 	if (connect(fd, addr, addrlen) == -1) {
 		if (errno == EINPROGRESS) {

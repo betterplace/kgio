@@ -7,6 +7,10 @@ class TestTryopen < Test::Unit::TestCase
 
   def test_tryopen_success
     tmp = Kgio::File.tryopen(__FILE__)
+
+    tmp.respond_to?(:close_on_exec?) and
+      assert_equal(RUBY_VERSION.to_f >= 2.0, tmp.close_on_exec?)
+
     assert_kind_of File, tmp
     assert_equal File.read(__FILE__), tmp.read
     assert_equal __FILE__, tmp.path
