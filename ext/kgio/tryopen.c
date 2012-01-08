@@ -15,6 +15,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include "set_file_path.h"
+#include "ancient_ruby.h"
 
 static ID id_for_fd, id_to_path, id_path;
 static st_table *errno2sym;
