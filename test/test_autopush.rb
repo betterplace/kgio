@@ -1,6 +1,10 @@
 require 'tempfile'
 require 'test/unit'
-RUBY_PLATFORM =~ /linux/ and require 'strace'
+begin
+  $-w = false
+  RUBY_PLATFORM =~ /linux/ and require 'strace'
+rescue LoadError
+end
 $-w = true
 require 'kgio'
 
