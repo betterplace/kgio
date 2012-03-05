@@ -1,4 +1,4 @@
-#ifndef HAVE_ACCEPT4
+#if !defined(HAVE_ACCEPT4) || !defined(SOCK_CLOEXEC) || !defined(SOCK_NONBLOCK)
 #  ifndef _GNU_SOURCE
 #    define _GNU_SOURCE
 #  endif
