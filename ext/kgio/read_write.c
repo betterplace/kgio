@@ -13,8 +13,18 @@ static ID id_set_backtrace;
 #if defined(__linux__) && ! defined(USE_MSG_DONTWAIT)
 #  define USE_MSG_DONTWAIT
 static const int peek_flags = MSG_DONTWAIT|MSG_PEEK;
+
+/* we don't need these variants, we call kgio_autopush_send/recv directly */
+static inline void kgio_autopush_read(VALUE io) { }
+static inline void kgio_autopush_write(VALUE io) { }
+
 #else
 static const int peek_flags = MSG_PEEK;
+#  include <netinet/tcp.h>
+#  if defined(TCP_NOPUSH)
+static inline void kgio_autopush_read(VALUE io) { kgio_autopush_recv(io); }
+static inline void kgio_autopush_write(VALUE io) { kgio_autopush_send(io); }
+#  endif
 #endif
 
 NORETURN(static void raise_empty_bt(VALUE, const char *));
@@ -112,6 +122,7 @@ static VALUE my_read(int io_wait, int argc, VALUE *argv, VALUE io)
 	long n;
 
 	prepare_read(&a, argc, argv, io);
+	kgio_autopush_read(io);
 
 	if (a.len > 0) {
 		set_nonblocking(a.fd);
@@ -357,6 +368,8 @@ retry:
 	n = (long)write(a.fd, a.ptr, a.len);
 	if (write_check(&a, n, "write", io_wait) != 0)
 		goto retry;
+	if (TYPE(a.buf) != T_SYMBOL)
+		kgio_autopush_write(io);
 	return a.buf;
 }
 

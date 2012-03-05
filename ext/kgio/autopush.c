@@ -240,6 +240,7 @@ static void push_pending_data(VALUE io)
 }
 #else /* !KGIO_NOPUSH */
 void kgio_autopush_recv(VALUE io){}
+void kgio_autopush_send(VALUE io){}
 void init_kgio_autopush(void)
 {
 }

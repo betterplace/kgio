@@ -38,7 +38,8 @@ class TestAutopush < Test::Unit::TestCase
     assert_nothing_raised { s.kgio_write 'asdf' }
     assert_equal :wait_readable, s.kgio_tryread(1)
     assert s.kgio_autopush?
-    assert_equal 1, s.getsockopt(Socket::IPPROTO_TCP, opt).unpack('i')[0]
+    val = s.getsockopt(Socket::IPPROTO_TCP, opt).unpack('i')[0]
+    assert_operator val, :>, 0, "#{opt}=#{val} (#{RUBY_PLATFORM})"
   end
 
   def test_autopush_true_unix
