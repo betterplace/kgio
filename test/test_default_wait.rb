@@ -24,7 +24,7 @@ class TestDefaultWait < Test::Unit::TestCase
     t0 = Time.now
     assert_nil a.kgio_wait_readable(1.1)
     diff = Time.now - t0
-    assert_in_delta diff, 1.1, 0.05
+    assert_in_delta diff, 1.1, 0.2
 
     b.kgio_write '.'
     assert_equal a, a.kgio_wait_readable(1.1)
@@ -37,7 +37,7 @@ class TestDefaultWait < Test::Unit::TestCase
     t0 = Time.now
     assert_nil b.kgio_wait_writable(1.1)
     diff = Time.now - t0
-    assert_in_delta diff, 1.1, 0.05
+    assert_in_delta diff, 1.1, 0.2
 
     a.kgio_read(16384)
     assert_equal b, b.kgio_wait_writable(1.1)
