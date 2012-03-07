@@ -58,7 +58,10 @@ class TestPoll < Test::Unit::TestCase
     res = nil
     thr = Thread.new { sleep 0.100; Process.kill(:USR1, $$) }
     t0 = Time.now
-    assert_raises(IOError) { Kgio.poll({@rd => Kgio::POLLIN}) }
+    assert_raises(IOError) do
+      result = Kgio.poll({@rd => Kgio::POLLIN})
+      result.each_key { |io| io.read_nonblock(1) }
+    end
     diff = Time.now - t0
     thr.join
     assert diff >= 0.010, "diff=#{diff}"
