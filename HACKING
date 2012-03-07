@@ -61,3 +61,18 @@ Without RubyGems (via setup.rb):
 
 It is not at all recommended to mix a RubyGems installation with an
 installation done without RubyGems, however.
+
+=== Tests
+
+We use GNU make to run tests in parallel.  test/unit/parallel didn't
+exist for old versions of Ruby before 1.9.3.  Users of GNU-based systems
+(such as GNU/Linux) usually have GNU make installed as "make" instead of
+"gmake".
+
+Running the entire test suite with 4 tests in parallel:
+
+  gmake -j4 test
+
+Running just one unit test:
+
+  gmake test/test_poll.rb
