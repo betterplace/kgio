@@ -20,11 +20,8 @@ static inline void kgio_autopush_write(VALUE io) { }
 
 #else
 static const int peek_flags = MSG_PEEK;
-#  include <netinet/tcp.h>
-#  if defined(TCP_NOPUSH)
 static inline void kgio_autopush_read(VALUE io) { kgio_autopush_recv(io); }
 static inline void kgio_autopush_write(VALUE io) { kgio_autopush_send(io); }
-#  endif
 #endif
 
 NORETURN(static void raise_empty_bt(VALUE, const char *));
