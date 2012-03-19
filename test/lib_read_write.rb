@@ -9,10 +9,8 @@ module LibReadWriteTest
   RANDOM_BLOB = File.open("/dev/urandom") { |fp| fp.read(10 * 1024 * 1024) }
 
   def teardown
-    assert_nothing_raised do
-      @rd.close if defined?(@rd) && ! @rd.closed?
-      @wr.close if defined?(@wr) && ! @wr.closed?
-    end
+    @rd.close if defined?(@rd) && ! @rd.closed?
+    @wr.close if defined?(@wr) && ! @wr.closed?
   end
 
   def test_write_empty
@@ -264,10 +262,8 @@ module LibReadWriteTest
     foo = nil
     t0 = Time.now
     thr = Thread.new { sleep 1; @wr.write "HELLO" }
-    assert_nothing_raised do
-      foo = @rd.kgio_read(5)
-      elapsed = Time.now - t0
-    end
+    foo = @rd.kgio_read(5)
+    elapsed = Time.now - t0
     assert elapsed >= 1.0, "elapsed: #{elapsed}"
     assert_equal "HELLO", foo
     thr.join
@@ -286,10 +282,9 @@ module LibReadWriteTest
     foo = nil
     t0 = Time.now
     thr = Thread.new { sleep 1; @rd.readpartial(nr) }
-    assert_nothing_raised do
-      foo = @wr.kgio_write("HELLO")
-      elapsed = Time.now - t0
-    end
+    foo = @wr.kgio_write("HELLO")
+    elapsed = Time.now - t0
+
     assert_nil foo
     if @wr.stat.pipe?
       assert elapsed >= 1.0, "elapsed: #{elapsed}"

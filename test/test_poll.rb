@@ -122,9 +122,7 @@ class TestPoll < Test::Unit::TestCase
       exit!(0)
     end
 
-    assert_nothing_raised do
-      empty += 1 until Kgio.poll(set.dup, 100)
-    end
+    empty += 1 until Kgio.poll(set.dup, 100)
     _, status = Process.waitpid2(pid)
     assert status.success?, status.inspect
     assert usr1 > 0, "usr1: #{usr1}"

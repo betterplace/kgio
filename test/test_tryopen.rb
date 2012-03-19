@@ -15,7 +15,7 @@ class TestTryopen < Test::Unit::TestCase
     assert_equal File.read(__FILE__), tmp.read
     assert_equal __FILE__, tmp.path
     assert_equal __FILE__, tmp.to_path
-    assert_nothing_raised { tmp.close }
+    tmp.close
   end
 
   def test_tryopen_ENOENT

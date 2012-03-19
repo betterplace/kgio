@@ -12,12 +12,12 @@ class TestAcceptClass < Test::Unit::TestCase
   end
 
   def teardown
-    assert_nothing_raised { Kgio.accept_class = nil }
+    Kgio.accept_class = nil
     assert_equal Kgio::Socket, Kgio.accept_class
   end
 
   def test_tcp_socket
-    assert_nothing_raised { Kgio.accept_class = Kgio::TCPSocket }
+    Kgio.accept_class = Kgio::TCPSocket
     assert_equal Kgio::TCPSocket, Kgio.accept_class
   end
 
@@ -31,21 +31,21 @@ class TestAcceptClass < Test::Unit::TestCase
     @srv = Kgio::TCPServer.new(@host, 0)
     @port = @srv.addr[1]
 
-    assert_nothing_raised { Kgio.accept_class = Kgio::TCPSocket }
+    Kgio.accept_class = Kgio::TCPSocket
     client = TCPSocket.new(@host, @port)
     assert_instance_of Kgio::TCPSocket, @srv.kgio_accept
     client = TCPSocket.new(@host, @port)
     IO.select([@srv])
     assert_instance_of Kgio::TCPSocket, @srv.kgio_tryaccept
 
-    assert_nothing_raised { Kgio.accept_class = nil }
+    Kgio.accept_class = nil
     client = TCPSocket.new(@host, @port)
     assert_instance_of Kgio::Socket, @srv.kgio_accept
     client = TCPSocket.new(@host, @port)
     IO.select([@srv])
     assert_instance_of Kgio::Socket, @srv.kgio_tryaccept
 
-    assert_nothing_raised { Kgio.accept_class = Kgio::UNIXSocket }
+    Kgio.accept_class = Kgio::UNIXSocket
     client = TCPSocket.new(@host, @port)
     assert_instance_of Kgio::UNIXSocket, @srv.kgio_accept
     client = TCPSocket.new(@host, @port)

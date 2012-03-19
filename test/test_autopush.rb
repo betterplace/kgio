@@ -18,12 +18,10 @@ class TestAutopush < Test::Unit::TestCase
 
     @host = ENV["TEST_HOST"] || '127.0.0.1'
     @srv = Kgio::TCPServer.new(@host, 0)
-    assert_nothing_raised {
+    RUBY_PLATFORM =~ /linux/ and
       @srv.setsockopt(Socket::IPPROTO_TCP, TCP_CORK, 1)
-    } if RUBY_PLATFORM =~ /linux/
-    assert_nothing_raised {
+    RUBY_PLATFORM =~ /freebsd/ and
       @srv.setsockopt(Socket::IPPROTO_TCP, TCP_NOPUSH, 1)
-    } if RUBY_PLATFORM =~ /freebsd/
     @port = @srv.addr[1]
   end
 
@@ -35,7 +33,7 @@ class TestAutopush < Test::Unit::TestCase
     assert ! s.kgio_autopush?
     s.kgio_autopush = true
     assert s.kgio_autopush?
-    assert_nothing_raised { s.kgio_write 'asdf' }
+    s.kgio_write 'asdf'
     assert_equal :wait_readable, s.kgio_tryread(1)
     assert s.kgio_autopush?
     val = s.getsockopt(Socket::IPPROTO_TCP, opt).unpack('i')[0]
@@ -64,12 +62,10 @@ class TestAutopush < Test::Unit::TestCase
       lines = io.readlines
       assert lines.grep(/TCP_CORK/).empty?, lines.inspect
     else
-      assert_nothing_raised do
-        @wr = @srv.kgio_accept
-        t0 = Time.now
-        @wr.kgio_write "HI\n"
-        rc = @wr.kgio_tryread 666
-      end
+      @wr = @srv.kgio_accept
+      t0 = Time.now
+      @wr.kgio_write "HI\n"
+      rc = @wr.kgio_tryread 666
     end
     assert_equal "HI\n", @rd.kgio_read(3)
     diff = Time.now - t0
@@ -151,8 +147,8 @@ class TestAutopush < Test::Unit::TestCase
       lines = io.readlines
       assert_equal 2, lines.grep(/TCP_CORK/).size, lines.inspect
     end
-    assert_nothing_raised { @wr.close }
-    assert_nothing_raised { @rd.close }
+    @wr.close
+    @rd.close
 
     @wr = Kgio::TCPSocket.new(@host, @port)
     if defined?(Strace)

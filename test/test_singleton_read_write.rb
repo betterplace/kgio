@@ -6,7 +6,7 @@ class TestSingletonReadWrite < Test::Unit::TestCase
 
   def test_unix_socketpair
     a, b = UNIXSocket.pair
-    assert_nothing_raised { Kgio.trywrite(a, "HELLO") }
+    Kgio.trywrite(a, "HELLO")
     buf = ""
     assert_equal "HELLO", Kgio.tryread(b, 5, buf)
     assert_equal "HELLO", buf
