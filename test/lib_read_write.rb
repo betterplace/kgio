@@ -57,6 +57,7 @@ module LibReadWriteTest
     a = "." * 0x1000
     b = a.dup
     @wr.syswrite("a")
+    IO.select([@rd]) # this seems needed on FreeBSD 9.0
     assert_equal "a", @rd.kgio_tryread(0x1000, b)
     assert_equal "a", b
     assert_equal "." * 0x1000, a
@@ -66,6 +67,7 @@ module LibReadWriteTest
     a = "." * 0x1000
     b = a.dup
     @wr.syswrite("a")
+    IO.select([@rd]) # this seems needed on FreeBSD 9.0
     assert_equal "a", @rd.kgio_tryread(0x1000, a)
     assert_equal "a", a
     assert_equal "." * 0x1000, b
@@ -88,6 +90,7 @@ module LibReadWriteTest
 
   def test_tryread_eof
     @wr.close
+    IO.select([@rd]) # this seems needed on FreeBSD 9.0
     assert_nil @rd.kgio_tryread(5)
   end
 
@@ -157,6 +160,7 @@ module LibReadWriteTest
 
   def test_trywrite_conv
     assert_equal nil, @wr.kgio_trywrite(10)
+    IO.select([@rd]) # this seems needed on FreeBSD 9.0
     assert_equal "10", @rd.kgio_tryread(2)
   end
 
@@ -182,6 +186,7 @@ module LibReadWriteTest
 
   def test_tryread_short
     assert_equal nil, @wr.kgio_trywrite("hi")
+    IO.select([@rd]) # this seems needed on FreeBSD 9.0
     assert_equal "h", @rd.kgio_tryread(1)
     assert_equal "i", @rd.kgio_tryread(1)
   end
