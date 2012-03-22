@@ -281,7 +281,7 @@ module LibReadWriteTest
     elapsed = 0
     foo = nil
     t0 = Time.now
-    thr = Thread.new { sleep 1; @rd.readpartial(nr) }
+    thr = Thread.new { sleep 1; @rd.read(nr) }
     foo = @wr.kgio_write("HELLO")
     elapsed = Time.now - t0
 
