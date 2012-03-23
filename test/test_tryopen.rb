@@ -26,11 +26,11 @@ class TestTryopen < Test::Unit::TestCase
     assert_equal :ENOENT, tmp
   end
 
-  def test_tryopen_EPERM
+  def test_tryopen_EACCES
     tmp = Tempfile.new "tryopen"
     File.chmod 0000, tmp.path
     tmp = Kgio::File.tryopen(tmp.path)
-    assert_equal :EACCES, tmp
+    assert_equal(:EACCES, tmp)
   end
 
   def test_tryopen_readwrite
