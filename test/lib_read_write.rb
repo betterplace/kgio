@@ -224,6 +224,7 @@ module LibReadWriteTest
   def test_tryread_extra_buf_eof_clears_buffer
     tmp = "hello world"
     @wr.close
+    IO.select([@rd]) # this seems needed on FreeBSD 9.0
     assert_nil @rd.kgio_tryread(2, tmp)
     assert_equal "", tmp
   end
