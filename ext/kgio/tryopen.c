@@ -42,7 +42,7 @@ static VALUE nogvl_open(void *ptr)
 #  include "rubysig.h"
 typedef void rb_unblock_function_t(void *);
 typedef VALUE rb_blocking_function_t(void *);
-static VALUE rb_thread_blocking_region(
+static VALUE my_thread_blocking_region(
 	rb_blocking_function_t *fn, void *data1,
 	rb_unblock_function_t *ubf, void *data2)
 {
@@ -54,6 +54,8 @@ static VALUE rb_thread_blocking_region(
 
 	return rv;
 }
+#define rb_thread_blocking_region(fn,data1,ubf,data2) \
+        my_thread_blocking_region((fn),(data1),(ubf),(data2))
 #endif /* ! HAVE_RB_THREAD_BLOCKING_REGION */
 
 /*
