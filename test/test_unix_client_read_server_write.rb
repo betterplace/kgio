@@ -1,7 +1,7 @@
 require './test/lib_read_write'
 require 'tempfile'
 
-class TestUnixServerReadClientWrite < Test::Unit::TestCase
+class TestUnixClientReadServerWrite < Test::Unit::TestCase
   def setup
     tmp = Tempfile.new('kgio_unix')
     @path = tmp.path
