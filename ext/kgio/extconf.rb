@@ -49,5 +49,6 @@ have_func('rb_thread_io_blocking_region')
 have_func('rb_str_set_len')
 have_func('rb_time_interval')
 have_func('rb_wait_for_single_fd')
+have_func('rb_str_subseq')
 
 create_makefile('kgio_ext')

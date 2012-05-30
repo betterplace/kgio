@@ -4,6 +4,9 @@
 static VALUE sym_wait_readable, sym_wait_writable;
 static VALUE eErrno_EPIPE, eErrno_ECONNRESET;
 static ID id_set_backtrace;
+#ifndef HAVE_RB_STR_SUBSEQ
+#define rb_str_subseq rb_str_substr
+#endif
 
 /*
  * we know MSG_DONTWAIT works properly on all stream sockets under Linux
@@ -338,7 +341,7 @@ done:
 				a->ptr = RSTRING_PTR(a->buf) + written;
 				return -1;
 			} else if (written > 0) {
-				a->buf = rb_str_new(a->ptr, a->len);
+				a->buf = rb_str_subseq(a->buf, written, a->len);
 			} else {
 				a->buf = sym_wait_writable;
 			}
