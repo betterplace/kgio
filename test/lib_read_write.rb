@@ -242,6 +242,7 @@ module LibReadWriteTest
 
   def test_tryread_too_much
     assert_equal nil, @wr.kgio_trywrite("hi")
+    assert_equal @rd, @rd.kgio_wait_readable
     assert_equal "hi", @rd.kgio_tryread(4)
   end
 
