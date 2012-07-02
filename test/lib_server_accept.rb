@@ -47,7 +47,7 @@ module LibServerAccept
     elapsed = Time.now - t0
     assert_kind_of Kgio::Socket, b
     assert_equal @host, b.kgio_addr
-    Process.kill(:TERM, pid)
+    Process.kill(:KILL, pid)
     Process.waitpid(pid)
     assert elapsed >= 1, "elapsed: #{elapsed}"
   end
@@ -60,7 +60,7 @@ module LibServerAccept
     elapsed = Time.now - t0
     assert_kind_of Kgio::Socket, b
     assert_equal @host, b.kgio_addr
-    Process.kill(:TERM, pid)
+    Process.kill(:KILL, pid)
     Process.waitpid(pid)
     assert elapsed >= 1, "elapsed: #{elapsed}"
 
@@ -70,7 +70,7 @@ module LibServerAccept
     elapsed = Time.now - t0
     assert_kind_of Kgio::Socket, b
     assert_equal @host, b.kgio_addr
-    Process.kill(:TERM, pid)
+    Process.kill(:KILL, pid)
     Process.waitpid(pid)
     assert elapsed >= 6, "elapsed: #{elapsed}"
 
@@ -80,7 +80,7 @@ module LibServerAccept
     elapsed = Time.now - t0
     assert_kind_of Kgio::Socket, b
     assert_equal @host, b.kgio_addr
-    Process.kill(:TERM, pid)
+    Process.kill(:KILL, pid)
     Process.waitpid(pid)
     assert elapsed >= 1, "elapsed: #{elapsed}"
   end
