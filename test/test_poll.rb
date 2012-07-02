@@ -126,9 +126,7 @@ class TestPoll < Test::Unit::TestCase
     _, status = Process.waitpid2(pid)
     assert status.success?, status.inspect
     assert usr1 > 0, "usr1: #{usr1}"
-    rescue Object => err
-      p [ :err, err ]
-    ensure
-      trap(:USR1, "DEFAULT")
-  end
+  ensure
+    trap(:USR1, "DEFAULT")
+  end unless RUBY_PLATFORM =~ /kfreebsd-gnu/
 end if Kgio.respond_to?(:poll)
