@@ -26,8 +26,8 @@ static int MY_SOCK_STREAM =
 #  define rb_fd_fix_cloexec(fd) for (;0;)
 #endif /* HAVE_RB_FD_FIX_CLOEXEC */
 
-static VALUE
-my_connect(VALUE klass, int io_wait, int domain, void *addr, socklen_t addrlen)
+/* try to use SOCK_NONBLOCK and SOCK_CLOEXEC */
+static int my_socket(int domain)
 {
 	int fd;
 
@@ -60,6 +60,14 @@ retry:
 			close_fail(fd, "fcntl(F_SETFL, O_RDWR | O_NONBLOCK)");
 		rb_fd_fix_cloexec(fd);
 	}
+
+	return fd;
+}
+
+static VALUE
+my_connect(VALUE klass, int io_wait, int domain, void *addr, socklen_t addrlen)
+{
+	int fd = my_socket(domain);
 
 	if (connect(fd, addr, addrlen) == -1) {
 		if (errno == EINPROGRESS) {
