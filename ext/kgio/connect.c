@@ -84,10 +84,10 @@ my_connect(VALUE klass, int io_wait, int domain, void *addr, socklen_t addrlen)
 	return sock_for_fd(klass, fd);
 }
 
-static VALUE tcp_connect(VALUE klass, VALUE ip, VALUE port, int io_wait)
+static void
+tcp_getaddr(struct addrinfo *hints, struct sockaddr_storage *addr,
+             VALUE ip, VALUE port)
 {
-	struct addrinfo hints;
-	struct sockaddr_storage addr;
 	int rc;
 	struct addrinfo *res;
 	const char *ipname = StringValuePtr(ip);
@@ -101,23 +101,31 @@ static VALUE tcp_connect(VALUE klass, VALUE ip, VALUE port, int io_wait)
 	rc = snprintf(ipport, sizeof(ipport), "%u", uport);
 	if (rc >= (int)sizeof(ipport) || rc <= 0)
 		rb_raise(rb_eArgError, "invalid TCP port: %u", uport);
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_protocol = IPPROTO_TCP;
+	memset(hints, 0, sizeof(struct addrinfo));
+	hints->ai_family = AF_UNSPEC;
+	hints->ai_socktype = SOCK_STREAM;
+	hints->ai_protocol = IPPROTO_TCP;
 	/* disallow non-deterministic DNS lookups */
-	hints.ai_flags = AI_NUMERICHOST;
+	hints->ai_flags = AI_NUMERICHOST;
 
-	rc = getaddrinfo(ipname, ipport, &hints, &res);
+	rc = getaddrinfo(ipname, ipport, hints, &res);
 	if (rc != 0)
 		rb_raise(rb_eArgError, "getaddrinfo(%s:%s): %s",
 			 ipname, ipport, gai_strerror(rc));
 
 	/* copy needed data and free ASAP to avoid needing rb_ensure */
-	hints.ai_family = res->ai_family;
-	hints.ai_addrlen = res->ai_addrlen;
-	memcpy(&addr, res->ai_addr, res->ai_addrlen);
+	hints->ai_family = res->ai_family;
+	hints->ai_addrlen = res->ai_addrlen;
+	memcpy(addr, res->ai_addr, res->ai_addrlen);
 	freeaddrinfo(res);
+}
+
+static VALUE tcp_connect(VALUE klass, VALUE ip, VALUE port, int io_wait)
+{
+	struct addrinfo hints;
+	struct sockaddr_storage addr;
+
+	tcp_getaddr(&hints, &addr, ip, port);
 
 	return my_connect(klass, io_wait, hints.ai_family,
 	                  &addr, hints.ai_addrlen);
