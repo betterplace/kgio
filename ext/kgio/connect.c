@@ -263,6 +263,21 @@ static VALUE kgio_connect(VALUE klass, VALUE addr)
 	return stream_connect(klass, addr, 1);
 }
 
+/*
+ * If passed one argument, this is identical to Kgio::Socket.connect.
+ * If passed two or three arguments, it uses its superclass method:
+ *
+ *   Socket.new(domain, socktype [, protocol ])
+ */
+static VALUE kgio_new(int argc, VALUE *argv, VALUE klass)
+{
+	if (argc == 1)
+		/* backwards compat, the only way for kgio <= 2.7.4 */
+		return stream_connect(klass, argv[0], 1);
+
+	return rb_call_super(argc, argv);
+}
+
 /* call-seq:
  *
  *      addr = Socket.pack_sockaddr_in(80, 'example.com')
@@ -298,7 +313,8 @@ void init_kgio_connect(void)
 	 */
 	cKgio_Socket = rb_define_class_under(mKgio, "Socket", cSocket);
 	rb_include_module(cKgio_Socket, mSocketMethods);
-	rb_define_singleton_method(cKgio_Socket, "new", kgio_connect, 1);
+	rb_define_singleton_method(cKgio_Socket, "new", kgio_new, -1);
+	rb_define_singleton_method(cKgio_Socket, "connect", kgio_connect, 1);
 	rb_define_singleton_method(cKgio_Socket, "start", kgio_start, 1);
 
 	/*
