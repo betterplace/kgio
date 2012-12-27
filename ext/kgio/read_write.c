@@ -494,7 +494,6 @@ static ssize_t custom_writev(int fd, const struct iovec *vec, unsigned int iov_c
 
 static void prepare_writev(struct io_args_v *a, VALUE io, VALUE ary)
 {
-	long vec_cnt;
 	a->io = io;
 	a->fd = my_fileno(io);
 	a->something_written = 0;
