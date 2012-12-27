@@ -49,4 +49,27 @@ VALUE kgio_call_wait_readable(VALUE io);
 #ifndef HAVE_RB_UPDATE_MAX_FD
 #  define rb_update_max_fd(fd) for (;0;)
 #endif
+
+/*
+ * 2012/12/13 - Linux 3.7 was released on 2012/12/10 with TFO.
+ * Headers distributed with glibc will take some time to catch up and
+ * be officially released.  Most GNU/Linux distros will take a few months
+ * to a year longer. "Enterprise" distros will probably take 5-7 years.
+ * So keep these until 2017 at least...
+ */
+#ifdef __linux__
+#  ifndef MSG_FASTOPEN
+#    define MSG_FASTOPEN	0x20000000 /* for clients */
+#  endif
+#  ifndef TCP_FASTOPEN
+#    define TCP_FASTOPEN	23 /* for listeners */
+#  endif
+   /* we _may_ have TFO support */
+#  define KGIO_TFO_MAYBE (1)
+#else /* rely entirely on standard system headers */
+#  define KGIO_TFO_MAYBE (0)
+#endif
+
+extern unsigned kgio_tfo;
+
 #endif /* KGIO_H */
