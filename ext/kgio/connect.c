@@ -168,7 +168,7 @@ static VALUE tfo_sendto(void *_a)
  * call-seq:
  *
  *	s = Kgio::Socket.new(:INET, :STREAM)
- *	addr = Socket.pack_sockaddr_in("example.com", 80)
+ *	addr = Socket.pack_sockaddr_in(80, "example.com")
  *	s.fastopen("hello world", addr) -> nil
  *
  * Starts a TCP connection using TCP Fast Open.  This uses a blocking
