@@ -79,15 +79,6 @@ static VALUE xaccept(void *ptr)
 #ifdef HAVE_RB_THREAD_BLOCKING_REGION
 #  include <time.h>
 #  include "blocking_io_region.h"
-/*
- * Try to use a (real) blocking accept() since that can prevent
- * thundering herds under Linux:
- * http://www.citi.umich.edu/projects/linux-scalability/reports/accept.html
- *
- * So we periodically disable non-blocking, but not too frequently
- * because other processes may set non-blocking (especially during
- * a process upgrade) with Rainbows! concurrency model changes.
- */
 static int thread_accept(struct accept_args *a, int force_nonblock)
 {
 	if (force_nonblock)
@@ -95,28 +86,6 @@ static int thread_accept(struct accept_args *a, int force_nonblock)
 	return (int)rb_thread_io_blocking_region(xaccept, a, a->fd);
 }
 
-static void set_blocking_or_block(int fd)
-{
-	static time_t last_set_blocking;
-	time_t now = time(NULL);
-
-	if (last_set_blocking == 0) {
-		last_set_blocking = now;
-		(void)rb_io_wait_readable(fd);
-	} else if ((now - last_set_blocking) <= 5) {
-		(void)rb_io_wait_readable(fd);
-	} else {
-		int flags = fcntl(fd, F_GETFL);
-		if (flags == -1)
-			rb_sys_fail("fcntl(F_GETFL)");
-		if (flags & O_NONBLOCK) {
-			flags = fcntl(fd, F_SETFL, flags & ~O_NONBLOCK);
-			if (flags == -1)
-				rb_sys_fail("fcntl(F_SETFL)");
-		}
-		last_set_blocking = now;
-	}
-}
 #else /* ! HAVE_RB_THREAD_BLOCKING_REGION */
 #  include <rubysig.h>
 static int thread_accept(struct accept_args *a, int force_nonblock)
@@ -134,7 +103,6 @@ static int thread_accept(struct accept_args *a, int force_nonblock)
 	TRAP_END;
 	return rv;
 }
-#define set_blocking_or_block(fd) (void)rb_io_wait_readable(fd)
 #endif /* ! HAVE_RB_THREAD_BLOCKING_REGION */
 
 static void
@@ -209,7 +177,8 @@ retry:
 				return Qnil;
 			a->fd = my_fileno(a->accept_io);
 			errno = EAGAIN;
-			set_blocking_or_block(a->fd);
+			(void)rb_io_wait_readable(a->fd);
+			/* fall-through to EINTR case */
 #ifdef ECONNABORTED
 		case ECONNABORTED:
 #endif /* ECONNABORTED */
@@ -217,6 +186,7 @@ retry:
 		case EPROTO:
 #endif /* EPROTO */
 		case EINTR:
+			/* raise IOError if closed during sleep */
 			a->fd = my_fileno(a->accept_io);
 			goto retry;
 		case ENOMEM:
