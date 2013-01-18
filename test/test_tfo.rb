@@ -33,7 +33,7 @@ class TestTFO < Test::Unit::TestCase
     port = s.local_address.ip_port
     addr = Socket.pack_sockaddr_in(port, addr)
     c = Kgio::Socket.new(:INET, :STREAM)
-    assert_nil c.fastopen("HELLO", addr)
+    assert_nil c.kgio_fastopen("HELLO", addr)
     a = s.accept
     assert_equal "HELLO", a.read(5)
     c.close
@@ -41,7 +41,7 @@ class TestTFO < Test::Unit::TestCase
 
     # ensure empty sends work
     c = Kgio::Socket.new(:INET, :STREAM)
-    assert_nil c.fastopen("", addr)
+    assert_nil c.kgio_fastopen("", addr)
     a = s.accept
     Thread.new { c.close }
     assert_nil a.read(1)
@@ -56,14 +56,14 @@ class TestTFO < Test::Unit::TestCase
       assert_equal buf.size, a.read(buf.size).size
       a.close
     end
-    assert_nil c.fastopen(buf, addr)
+    assert_nil c.kgio_fastopen(buf, addr)
     thr.join
     c.close
 
     # allow timeouts
     c = Kgio::Socket.new(:INET, :STREAM)
     c.setsockopt(:SOCKET, :SNDTIMEO, [ 0, 10 ].pack("l_l_"))
-    unsent = c.fastopen(buf, addr)
+    unsent = c.kgio_fastopen(buf, addr)
     c.close
     assert_equal s.accept.read.size + unsent.size, buf.size
   end if defined?(Addrinfo) && defined?(Kgio::TCP_FASTOPEN)

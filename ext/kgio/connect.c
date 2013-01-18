@@ -169,13 +169,16 @@ static VALUE tfo_sendto(void *_a)
  *
  *	s = Kgio::Socket.new(:INET, :STREAM)
  *	addr = Socket.pack_sockaddr_in(80, "example.com")
- *	s.fastopen("hello world", addr) -> nil
+ *	s.kgio_fastopen("hello world", addr) -> nil
  *
  * Starts a TCP connection using TCP Fast Open.  This uses a blocking
  * sendto() syscall and is only available on Ruby 1.9 or later.
  * This raises exceptions (including Errno::EINPROGRESS/Errno::EAGAIN)
  * on errors.  Using this is only recommended for blocking sockets.
- * 	s.setsockopt(:SOCKET, :SNDTIMEO, [1,0].pack("l_l_"))
+ *
+ * Timeouts may be set with setsockopt:
+ *
+ *	s.setsockopt(:SOCKET, :SNDTIMEO, [1,0].pack("l_l_"))
  */
 static VALUE fastopen(VALUE sock, VALUE buf, VALUE addr)
 {
@@ -379,7 +382,7 @@ void init_kgio_connect(void)
 	rb_define_singleton_method(cKgio_Socket, "connect", kgio_connect, 1);
 	rb_define_singleton_method(cKgio_Socket, "start", kgio_start, 1);
 #if defined(MSG_FASTOPEN) && defined(HAVE_RB_THREAD_BLOCKING_REGION)
-	rb_define_method(cKgio_Socket, "fastopen", fastopen, 2);
+	rb_define_method(cKgio_Socket, "kgio_fastopen", fastopen, 2);
 #endif
 	/*
 	 * Document-class: Kgio::TCPSocket
