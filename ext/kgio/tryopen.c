@@ -106,7 +106,7 @@ static VALUE s_tryopen(int argc, VALUE *argv, VALUE klass)
 
 retry:
 	fd = (int)rb_thread_blocking_region(nogvl_open, &o, RUBY_UBF_IO, 0);
-	if (fd == -1) {
+	if (fd < 0) {
 		if (errno == EMFILE || errno == ENFILE || errno == ENOMEM) {
 			rb_gc();
 			if (retried)
@@ -114,7 +114,7 @@ retry:
 			retried = 1;
 			goto retry;
 		}
-		if (fd == -1) {
+		if (fd < 0) {
 			int saved_errno = errno;
 
 			if (!st_lookup(errno2sym, (st_data_t)errno, &rv)) {

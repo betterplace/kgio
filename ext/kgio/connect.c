@@ -36,7 +36,7 @@ static int my_socket(int domain)
 retry:
 	fd = socket(domain, MY_SOCK_STREAM, 0);
 
-	if (fd == -1) {
+	if (fd < 0) {
 		switch (errno) {
 		case EMFILE:
 		case ENFILE:
@@ -53,12 +53,12 @@ retry:
 				goto retry;
 			}
 		}
-		if (fd == -1)
+		if (fd < 0)
 			rb_sys_fail("socket");
 	}
 
 	if (MY_SOCK_STREAM == SOCK_STREAM) {
-		if (fcntl(fd, F_SETFL, O_RDWR | O_NONBLOCK) == -1)
+		if (fcntl(fd, F_SETFL, O_RDWR | O_NONBLOCK) < 0)
 			close_fail(fd, "fcntl(F_SETFL, O_RDWR | O_NONBLOCK)");
 		rb_fd_fix_cloexec(fd);
 	}
@@ -71,7 +71,7 @@ my_connect(VALUE klass, int io_wait, int domain, void *addr, socklen_t addrlen)
 {
 	int fd = my_socket(domain);
 
-	if (connect(fd, addr, addrlen) == -1) {
+	if (connect(fd, addr, addrlen) < 0) {
 		if (errno == EINPROGRESS) {
 			VALUE io = sock_for_fd(klass, fd);
 

@@ -109,7 +109,7 @@ static void prepare_read(struct io_args *a, int argc, VALUE *argv, VALUE io)
 
 static int read_check(struct io_args *a, long n, const char *msg, int io_wait)
 {
-	if (n == -1) {
+	if (n < 0) {
 		if (errno == EINTR) {
 			a->fd = my_fileno(a->io);
 			return -1;
@@ -344,7 +344,7 @@ static int write_check(struct io_args *a, long n, const char *msg, int io_wait)
 	if (a->len == n) {
 done:
 		a->buf = Qnil;
-	} else if (n == -1) {
+	} else if (n < 0) {
 		if (errno == EINTR) {
 			a->fd = my_fileno(a->io);
 			return -1;
@@ -589,7 +589,7 @@ static int writev_check(struct io_args_v *a, long n, const char *msg, int io_wai
 	if (n >= 0) {
 		if (n > 0) a->something_written = 1;
 		return trim_writev_buffer(a, n);
-	} else if (n == -1) {
+	} else if (n < 0) {
 		if (errno == EINTR) {
 			a->fd = my_fileno(a->io);
 			return -1;

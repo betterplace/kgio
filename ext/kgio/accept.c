@@ -68,7 +68,7 @@ static VALUE xaccept(void *ptr)
 	int rv;
 
 	rv = accept_fn(a->fd, a->addr, a->addrlen, a->flags);
-	if (rv == -1 && errno == ENOSYS && accept_fn != my_accept4) {
+	if (rv < 0 && errno == ENOSYS && accept_fn != my_accept4) {
 		accept_fn = my_accept4;
 		rv = accept_fn(a->fd, a->addr, a->addrlen, a->flags);
 	}
@@ -170,7 +170,7 @@ my_accept(struct accept_args *a, int force_nonblock)
 
 retry:
 	client_fd = thread_accept(a, force_nonblock);
-	if (client_fd == -1) {
+	if (client_fd < 0) {
 		switch (errno) {
 		case EAGAIN:
 			if (force_nonblock)
