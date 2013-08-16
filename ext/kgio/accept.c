@@ -143,7 +143,9 @@ static VALUE in_addr_set(VALUE io, struct sockaddr_storage *addr, socklen_t len)
 		host_len = (long)INET6_ADDRSTRLEN;
 		break;
 	default:
-		rb_raise(rb_eRuntimeError, "unsupported address family");
+		rb_raise(rb_eRuntimeError,
+		         "unsupported address family: ss_family=%lu (socklen=%ld)",
+			 (unsigned long)addr->ss_family, (long)len);
 	}
 	host = rb_str_new(NULL, host_len);
 	host_ptr = RSTRING_PTR(host);
