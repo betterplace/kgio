@@ -356,7 +356,8 @@ module LibReadWriteTest
     readed = @rd.read(RANDOM_BLOB.size)
     thr.join
     assert_nil thr.value
-    assert_equal RANDOM_BLOB, readed
+    e = (RANDOM_BLOB == readed)
+    assert e
   end
 
   def test_monster_write_wait_writable
@@ -388,7 +389,8 @@ module LibReadWriteTest
     readed = @rd.read(buf_size)
     thr.join
     assert_nil thr.value
-    assert_equal buf.join, readed
+    e = (buf.join == readed)
+    assert e
     assert @wr.instance_variable_get(:@nr) > 0
   end
 
