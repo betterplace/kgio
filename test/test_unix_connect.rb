@@ -14,7 +14,7 @@ end
 class TestKgioUnixConnect < Test::Unit::TestCase
 
   def setup
-    tmp = Tempfile.new('kgio_unix')
+    tmp = Tempfile.new('kgio_unix_1')
     @path = tmp.path
     File.unlink(@path)
     tmp.close rescue nil

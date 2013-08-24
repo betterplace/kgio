@@ -4,7 +4,7 @@ require './test/lib_server_accept'
 class TestKgioUNIXServer < Test::Unit::TestCase
 
   def setup
-    tmp = Tempfile.new('kgio_unix')
+    tmp = Tempfile.new('kgio_unix_2')
     @path = tmp.path
     File.unlink(@path)
     tmp.close rescue nil
