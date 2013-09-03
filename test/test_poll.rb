@@ -114,7 +114,7 @@ class TestPoll < Test::Unit::TestCase
     empty = 0
     nr = 100
     set = { @rd => Kgio::POLLIN }
-    trap(:USR1) { usr1 += 1 }
+    orig = trap(:USR1) { usr1 += 1 }
     pid = fork do
       trap(:USR1, "DEFAULT")
       sleep 0.1
@@ -129,6 +129,6 @@ class TestPoll < Test::Unit::TestCase
     assert status.success?, status.inspect
     assert usr1 > 0, "usr1: #{usr1}"
   ensure
-    trap(:USR1, "DEFAULT")
+    trap(:USR1, orig)
   end unless RUBY_PLATFORM =~ /kfreebsd-gnu/
 end if Kgio.respond_to?(:poll)
