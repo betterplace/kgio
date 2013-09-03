@@ -30,7 +30,12 @@ class TestTryopen < Test::Unit::TestCase
     tmp = Tempfile.new "tryopen"
     File.chmod 0000, tmp.path
     tmp = Kgio::File.tryopen(tmp.path)
-    assert_equal(:EACCES, tmp)
+    if Process.euid == 0
+      assert_kind_of Kgio::File, tmp
+      warn "cannot test EACCES when euid == 0"
+    else
+      assert_equal(:EACCES, tmp)
+    end
   end
 
   def test_tryopen_readwrite
