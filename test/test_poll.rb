@@ -89,11 +89,13 @@ class TestPoll < Test::Unit::TestCase
 
   def test_poll_EINTR_changed
     ok = false
-    orig = trap(:USR1) { ok = true }
     pollset = { @rd => Kgio::POLLIN }
+    orig = trap(:USR1) do
+      pollset[@wr] = Kgio::POLLOUT
+      ok = true
+    end
     thr = Thread.new do
       sleep 0.100
-      pollset[@wr] = Kgio::POLLOUT
       Process.kill(:USR1, $$)
     end
     t0 = Time.now
