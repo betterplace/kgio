@@ -456,10 +456,12 @@ module LibReadWriteTest
     def @wr.kgio_wait_writable
       raise "Hello"
     end
-    tmp = []
-    buf = "." * 1024
-    10000.times { tmp << @wr.kgio_trywrite(buf) }
-    assert_equal :wait_writable, tmp.pop
+    buf = "." * 4096
+    rv = nil
+    until rv == :wait_writable
+      rv = @wr.kgio_trywrite(buf)
+    end
+    assert_equal :wait_writable, rv
   end
 
   def test_wait_writable_method
