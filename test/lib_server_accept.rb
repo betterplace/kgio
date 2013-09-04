@@ -1,6 +1,7 @@
 require 'test/unit'
 require 'fcntl'
 require 'io/nonblock'
+require 'fileutils'
 $-w = true
 require 'kgio'
 
@@ -8,6 +9,7 @@ module LibServerAccept
 
   def teardown
     @srv.close unless @srv.closed?
+    FileUtils.remove_entry_secure(@tmpdir) if defined?(@tmpdir)
     Kgio.accept_cloexec = true
     Kgio.accept_nonblock = false
   end

@@ -3,6 +3,7 @@ require 'io/nonblock'
 $-w = true
 require 'kgio'
 require 'tempfile'
+require 'tmpdir'
 
 class SubSocket < Kgio::Socket
   attr_accessor :foo
@@ -14,7 +15,8 @@ end
 class TestKgioUnixConnect < Test::Unit::TestCase
 
   def setup
-    tmp = Tempfile.new('kgio_unix_1')
+    @tmpdir = Dir.mktmpdir('kgio_unix_1')
+    tmp = Tempfile.new('kgio_unix_1', @tmpdir)
     @path = tmp.path
     File.unlink(@path)
     tmp.close rescue nil
@@ -25,6 +27,7 @@ class TestKgioUnixConnect < Test::Unit::TestCase
   def teardown
     @srv.close unless @srv.closed?
     File.unlink(@path)
+    FileUtils.remove_entry_secure(@tmpdir)
     Kgio.accept_cloexec = true
   end
 

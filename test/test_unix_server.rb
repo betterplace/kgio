@@ -1,10 +1,12 @@
 require 'tempfile'
+require 'tmpdir'
 require './test/lib_server_accept'
 
 class TestKgioUNIXServer < Test::Unit::TestCase
 
   def setup
-    tmp = Tempfile.new('kgio_unix_2')
+    @tmpdir = Dir.mktmpdir('kgio_unix_2')
+    tmp = Tempfile.new('kgio_unix_2', @tmpdir)
     @path = tmp.path
     File.unlink(@path)
     tmp.close rescue nil

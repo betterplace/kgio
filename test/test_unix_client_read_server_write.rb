@@ -1,9 +1,11 @@
 require './test/lib_read_write'
 require 'tempfile'
+require 'tmpdir'
 
 class TestUnixClientReadServerWrite < Test::Unit::TestCase
   def setup
-    tmp = Tempfile.new('kgio_unix_0')
+    @tmpdir = Dir.mktmpdir('kgio_unix_0')
+    tmp = Tempfile.new('kgio_unix_0', @tmpdir)
     @path = tmp.path
     File.unlink(@path)
     tmp.close rescue nil

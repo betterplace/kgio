@@ -2,6 +2,7 @@
 require 'test/unit'
 require 'io/nonblock'
 require 'digest/sha1'
+require 'fileutils'
 $-w = true
 require 'kgio'
 
@@ -11,6 +12,7 @@ module LibReadWriteTest
   def teardown
     @rd.close if defined?(@rd) && ! @rd.closed?
     @wr.close if defined?(@wr) && ! @wr.closed?
+    FileUtils.remove_entry_secure(@tmpdir) if defined?(@tmpdir)
   end
 
   def test_write_empty
