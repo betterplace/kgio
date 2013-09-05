@@ -96,7 +96,10 @@ class TestPoll < Test::Unit::TestCase
     end
     thr = Thread.new do
       sleep 0.100
-      Process.kill(:USR1, $$)
+      100.times do
+        Process.kill(:USR1, $$)
+        Thread.pass
+      end
     end
     t0 = Time.now
     res = Kgio.poll(pollset, 1000)
