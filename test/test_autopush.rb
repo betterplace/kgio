@@ -44,8 +44,7 @@ class TestAutopush < Test::Unit::TestCase
     Kgio.autopush = true
     tmp = Tempfile.new('kgio_unix')
     @path = tmp.path
-    File.unlink(@path)
-    tmp.close rescue nil
+    tmp.close!
     @srv = Kgio::UNIXServer.new(@path)
     @rd = Kgio::UNIXSocket.new(@path)
     t0 = nil

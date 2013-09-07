@@ -7,8 +7,7 @@ class TestUnixServerReadClientWrite < Test::Unit::TestCase
     @tmpdir = Dir.mktmpdir('kgio_unix_3')
     tmp = Tempfile.new('kgio_unix_3', @tmpdir)
     @path = tmp.path
-    File.unlink(@path)
-    tmp.close rescue nil
+    tmp.close!
     @srv = Kgio::UNIXServer.new(@path)
     @wr = Kgio::UNIXSocket.new(@path)
     @rd = @srv.kgio_tryaccept

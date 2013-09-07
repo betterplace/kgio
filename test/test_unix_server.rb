@@ -8,8 +8,7 @@ class TestKgioUNIXServer < Test::Unit::TestCase
     @tmpdir = Dir.mktmpdir('kgio_unix_2')
     tmp = Tempfile.new('kgio_unix_2', @tmpdir)
     @path = tmp.path
-    File.unlink(@path)
-    tmp.close rescue nil
+    tmp.close!
     @srv = Kgio::UNIXServer.new(@path)
     @host = '127.0.0.1'
   end

@@ -18,8 +18,7 @@ class TestKgioUnixConnect < Test::Unit::TestCase
     @tmpdir = Dir.mktmpdir('kgio_unix_1')
     tmp = Tempfile.new('kgio_unix_1', @tmpdir)
     @path = tmp.path
-    File.unlink(@path)
-    tmp.close rescue nil
+    tmp.close!
     @srv = Kgio::UNIXServer.new(@path)
     @addr = Socket.pack_sockaddr_un(@path)
   end
