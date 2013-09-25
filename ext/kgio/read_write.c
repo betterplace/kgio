@@ -606,12 +606,12 @@ static int writev_check(struct io_args_v *a, long n, const char *msg, int io_wai
 	return 0;
 }
 
-static VALUE my_writev(VALUE io, VALUE str, int io_wait)
+static VALUE my_writev(VALUE io, VALUE ary, int io_wait)
 {
 	struct io_args_v a;
 	long n;
 
-	prepare_writev(&a, io, str);
+	prepare_writev(&a, io, ary);
 	set_nonblocking(a.fd);
 
 	do {
@@ -619,12 +619,15 @@ static VALUE my_writev(VALUE io, VALUE str, int io_wait)
 		if (a.iov_cnt == 0)
 			n = 0;
 		else if (a.iov_cnt == 1)
-			n = (long)write(a.fd, a.vec[0].iov_base, a.vec[0].iov_len);
+			n = (long)write(a.fd, a.vec[0].iov_base,
+			                a.vec[0].iov_len);
 		/* for big strings use library function */
-		else if (USE_WRITEV && a.batch_len / WRITEV_IMPL_THRESHOLD > a.iov_cnt)
+		else if (USE_WRITEV &&
+		        ((a.batch_len / WRITEV_IMPL_THRESHOLD) > a.iov_cnt))
 			n = (long)writev(a.fd, a.vec, a.iov_cnt);
 		else
-			n = (long)custom_writev(a.fd, a.vec, a.iov_cnt, a.batch_len);
+			n = (long)custom_writev(a.fd, a.vec, a.iov_cnt,
+			                        a.batch_len);
 	} while (writev_check(&a, n, "writev", io_wait) != 0);
 	rb_str_resize(a.vec_buf, 0);
 
