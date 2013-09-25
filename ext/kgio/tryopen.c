@@ -135,8 +135,7 @@ void init_kgio_tryopen(void)
 	VALUE mPipeMethods = rb_const_get(mKgio, rb_intern("PipeMethods"));
 	VALUE cFile;
 	VALUE tmp;
-	VALUE *ptr;
-	long len;
+	long i, len;
 
 	id_path = rb_intern("path");
 	id_for_fd = rb_intern("for_fd");
@@ -161,15 +160,15 @@ void init_kgio_tryopen(void)
 
 	errno2sym = st_init_numtable();
 	tmp = rb_funcall(rb_mErrno, rb_intern("constants"), 0);
-	ptr = RARRAY_PTR(tmp);
 	len = RARRAY_LEN(tmp);
-	for (; --len >= 0; ptr++) {
+	for (i = 0; i < len; i++) {
 		VALUE error;
+		VALUE err = rb_ary_entry(tmp, i);
 		ID const_id;
 
-		switch (TYPE(*ptr)) {
-		case T_SYMBOL: const_id = SYM2ID(*ptr); break;
-		case T_STRING: const_id = rb_intern(RSTRING_PTR(*ptr)); break;
+		switch (TYPE(err)) {
+		case T_SYMBOL: const_id = SYM2ID(err); break;
+		case T_STRING: const_id = rb_intern(RSTRING_PTR(err)); break;
 		default: rb_bug("constant not a symbol or string");
 		}
 
