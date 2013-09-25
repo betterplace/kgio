@@ -521,9 +521,7 @@ static void fill_iovec(struct io_args_v *a)
 	curvec = a->vec = (struct iovec*)RSTRING_PTR(a->vec_buf);
 
 	for (i=0; i < a->iov_cnt; i++, curvec++) {
-		/* rb_ary_store could reallocate array,
-		 * so that ought to use RARRAY_PTR */
-		VALUE str = RARRAY_PTR(a->buf)[i];
+		VALUE str = rb_ary_entry(a->buf, i);
 		long str_len, next_len;
 
 		if (TYPE(str) != T_STRING) {
@@ -551,14 +549,14 @@ static long trim_writev_buffer(struct io_args_v *a, long n)
 {
 	long i;
 	long ary_len = RARRAY_LEN(a->buf);
-	VALUE *elem = RARRAY_PTR(a->buf);
 
 	if (n == (long)a->batch_len) {
 		i = a->iov_cnt;
 		n = 0;
 	} else {
-		for (i = 0; n && i < ary_len; i++, elem++) {
-			n -= RSTRING_LEN(*elem);
+		for (i = 0; n && i < ary_len; i++) {
+			VALUE entry = rb_ary_entry(a->buf, i);
+			n -= RSTRING_LEN(entry);
 			if (n < 0) break;
 		}
 	}
@@ -576,7 +574,7 @@ static long trim_writev_buffer(struct io_args_v *a, long n)
 
 	/* setup+replace partially written buffer */
 	if (n < 0) {
-		VALUE str = RARRAY_PTR(a->buf)[0];
+		VALUE str = rb_ary_entry(a->buf, 0);
 		long str_len = RSTRING_LEN(str);
 		str = rb_str_subseq(str, str_len + n, -n);
 		rb_ary_store(a->buf, 0, str);

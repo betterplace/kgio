@@ -17,9 +17,6 @@ static void my_str_set_len(VALUE str, long len)
 #  define RSTRING_LEN(s) (RSTRING(s)->len)
 #endif /* !defined(RSTRING_LEN) */
 
-#ifndef RARRAY_PTR
-#  define RARRAY_PTR(s) (RARRAY(s)->ptr)
-#endif /* !defined(RARRAY_PTR) */
 #ifndef RARRAY_LEN
 #  define RARRAY_LEN(s) (RARRAY(s)->len)
 #endif /* !defined(RARRAY_LEN) */
