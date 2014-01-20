@@ -7,6 +7,9 @@
 #else
 #  include <rubyio.h>
 #endif
+#ifdef HAVE_RUBY_THREAD_H
+#  include <ruby/thread.h>
+#endif
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -42,7 +45,16 @@ void kgio_autopush_send(VALUE);
 
 VALUE kgio_call_wait_writable(VALUE io);
 VALUE kgio_call_wait_readable(VALUE io);
-#if defined(HAVE_RB_THREAD_BLOCKING_REGION) && defined(HAVE_POLL)
+#if defined(HAVE_RB_THREAD_CALL_WITHOUT_GVL)
+#  define KGIO_HAVE_THREAD_CALL_WITHOUT_GVL 1
+typedef  void *(*kgio_blocking_fn_t)(void*);
+#  define rb_thread_blocking_region(fn,data1,ubf,data2) \
+          rb_thread_call_without_gvl((kgio_blocking_fn_t)(fn),(data1),(ubf),(data2))
+#elif defined(HAVE_RB_THREAD_BLOCKING_REGION)
+#  define KGIO_HAVE_THREAD_CALL_WITHOUT_GVL 1
+#endif /* HAVE_RB_THREAD_CALL_WITHOUT_GVL || HAVE_RB_THREAD_BLOCKING_REGION */
+
+#if defined(KGIO_HAVE_THREAD_CALL_WITHOUT_GVL) && defined(HAVE_POLL)
 #  define USE_KGIO_POLL
 #endif /* USE_KGIO_POLL */
 

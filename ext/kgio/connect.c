@@ -143,7 +143,7 @@ static struct sockaddr *sockaddr_from(socklen_t *addrlen, VALUE addr)
 	return NULL;
 }
 
-#if defined(MSG_FASTOPEN) && defined(HAVE_RB_THREAD_BLOCKING_REGION)
+#if defined(MSG_FASTOPEN) && defined(KGIO_HAVE_THREAD_CALL_WITHOUT_GVL)
 #ifndef HAVE_RB_STR_SUBSEQ
 #define rb_str_subseq rb_str_substr
 #endif
@@ -381,7 +381,7 @@ void init_kgio_connect(void)
 	rb_define_singleton_method(cKgio_Socket, "new", kgio_new, -1);
 	rb_define_singleton_method(cKgio_Socket, "connect", kgio_connect, 1);
 	rb_define_singleton_method(cKgio_Socket, "start", kgio_start, 1);
-#if defined(MSG_FASTOPEN) && defined(HAVE_RB_THREAD_BLOCKING_REGION)
+#if defined(MSG_FASTOPEN) && defined(KGIO_HAVE_THREAD_CALL_WITHOUT_GVL)
 	rb_define_method(cKgio_Socket, "kgio_fastopen", fastopen, 2);
 #endif
 	/*

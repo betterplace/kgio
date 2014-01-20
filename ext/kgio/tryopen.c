@@ -17,6 +17,7 @@
 #include <errno.h>
 #include "set_file_path.h"
 #include "ancient_ruby.h"
+#include "kgio.h"
 
 static ID id_for_fd, id_to_path, id_path;
 static st_table *errno2sym;
@@ -38,7 +39,7 @@ static VALUE nogvl_open(void *ptr)
 	return (VALUE)rb_cloexec_open(o->pathname, o->flags, o->mode);
 }
 
-#ifndef HAVE_RB_THREAD_BLOCKING_REGION
+#ifndef KGIO_HAVE_THREAD_CALL_WITHOUT_GVL
 #  define RUBY_UBF_IO ((void *)(-1))
 #  include "rubysig.h"
 typedef void rb_unblock_function_t(void *);
@@ -57,7 +58,7 @@ static VALUE my_thread_blocking_region(
 }
 #define rb_thread_blocking_region(fn,data1,ubf,data2) \
         my_thread_blocking_region((fn),(data1),(ubf),(data2))
-#endif /* ! HAVE_RB_THREAD_BLOCKING_REGION */
+#endif /* ! KGIO_HAVE_THREAD_CALL_WITHOUT_GVL */
 
 /*
  * call-seq:
