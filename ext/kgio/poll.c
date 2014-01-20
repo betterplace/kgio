@@ -139,13 +139,13 @@ static VALUE poll_result(int nr, struct poll_args *a)
 static VALUE do_poll(VALUE args)
 {
 	struct poll_args *a = (struct poll_args *)args;
-	int nr;
+	long nr;
 
 	Check_Type(a->ios, T_HASH);
 
 retry:
 	hash2pollfds(a);
-	nr = (int)rb_thread_blocking_region(nogvl_poll, a, RUBY_UBF_IO, NULL);
+	nr = (long)rb_thread_blocking_region(nogvl_poll, a, RUBY_UBF_IO, NULL);
 	if (nr < 0) {
 		if (interrupted()) {
 			if (retryable(a)) {

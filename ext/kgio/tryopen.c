@@ -81,7 +81,7 @@ static VALUE my_thread_blocking_region(
  */
 static VALUE s_tryopen(int argc, VALUE *argv, VALUE klass)
 {
-	int fd;
+	long fd;
 	VALUE pathname, flags, mode;
 	struct open_args o;
 	int retried = 0;
@@ -106,7 +106,7 @@ static VALUE s_tryopen(int argc, VALUE *argv, VALUE klass)
 	}
 
 retry:
-	fd = (int)rb_thread_blocking_region(nogvl_open, &o, RUBY_UBF_IO, 0);
+	fd = (long)rb_thread_blocking_region(nogvl_open, &o, RUBY_UBF_IO, 0);
 	if (fd < 0) {
 		if (errno == EMFILE || errno == ENFILE || errno == ENOMEM) {
 			rb_gc();
@@ -125,7 +125,7 @@ retry:
 			return rv;
 		}
 	}
-	rv = rb_funcall(klass, id_for_fd, 1, INT2FIX(fd));
+	rv = rb_funcall(klass, id_for_fd, 1, LONG2FIX(fd));
 	set_file_path(rv, pathname);
 	return rv;
 }
