@@ -1,3 +1,5 @@
+ #include <sys/time.h>
+
 /*
  * this header includes functions to support broken systems
  * without clock_gettime() or CLOCK_MONOTONIC

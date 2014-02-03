@@ -1,4 +1,5 @@
 # -*- encoding: binary -*-
+require 'kgio/version'
 require 'socket'
 
 # See the {README}[link:index.html]

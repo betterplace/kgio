@@ -1,32 +1,18 @@
-# -*- encoding: binary -*-
-cgit_url = "http://bogomips.org/kgio.git"
-git_url = 'git://bogomips.org/kgio.git'
+# vim: set filetype=ruby et sw=2 ts=2:
 
-desc "post news article to rubyforge"
-task :publish_news do
-  require 'rubyforge'
-  spec = Gem::Specification.load('kgio.gemspec')
-  tmp = Tempfile.new('rf-news')
-  _, subject, body = `git cat-file tag v#{spec.version}`.split(/\n\n/, 3)
-  tmp.puts subject
-  tmp.puts
-  tmp.puts spec.description.strip
-  tmp.puts ""
-  tmp.puts "* #{spec.homepage}"
-  tmp.puts "* #{spec.email}"
-  tmp.puts "* #{git_url}"
-  tmp.print "\nChanges:\n\n"
-  tmp.puts body
-  tmp.flush
-  system(ENV["VISUAL"], tmp.path) or abort "#{ENV["VISUAL"]} failed: #$?"
-  msg = File.readlines(tmp.path)
-  subject = msg.shift
-  blank = msg.shift
-  blank == "\n" or abort "no newline after subject!"
-  subject.strip!
-  body = msg.join("").strip!
+require 'gem_hadar'
 
-  rf = RubyForge.new.configure
-  rf.login
-  rf.post_news('rainbows', subject, body)
+GemHadar do
+  name        'kgio'
+  version     '2.8.1'
+  author      'kgio hackers'
+  email       'kgio@librelist.org'
+  homepage    "http://bogomips.org/kgio/"
+  summary     'kinder, gentler I/O for Ruby'
+  description 'Library for kinder, gentler I/O for Ruby'
+  test_dir    'test'
+  ignore      '.*.sw[pon]', 'pkg', 'Gemfile.lock', 'coverage', '.rvmrc',
+    '.AppleDouble', '.bundle', '*.o', '*.log'
+  readme      'README'
+  require_paths << 'ext/kgio'
 end
